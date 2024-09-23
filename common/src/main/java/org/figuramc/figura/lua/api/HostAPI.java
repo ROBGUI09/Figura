@@ -625,7 +625,7 @@ public class HostAPI {
     @LuaWhitelist
     @LuaMethodDoc(
             value = "host.get_entity_statistic",
-            aliases = "get_entity_stat",
+            aliases = "getEntityStat",
             overloads = @LuaMethodOverload(
                     argumentTypes = EntityAPI.class,
                     argumentNames = "entity"
