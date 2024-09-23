@@ -551,7 +551,6 @@ public class HostAPI {
         LocalPlayer player = this.minecraft.player;
         if (player == null || !isHost()) return map;
         for (Stat<?> stat : Stats.CUSTOM) {
-            System.out.println(stat.getName());
             String name = stat.getName().replace("minecraft.custom:minecraft.",""); // turn registry to translation key
             map.put(name, player.getStats().getValue(stat));
         }
