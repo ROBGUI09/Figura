@@ -549,6 +549,7 @@ public class HostAPI {
     public void updateStatistics() {
         this.minecraft.getConnection().send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.REQUEST_STATS)); // in theory, this cant nullptr; if it does, ill fix later
     }
+    @LuaWhitelist
     public void updateStats() {updateStatistics();}
 
     @LuaWhitelist
