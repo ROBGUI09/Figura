@@ -13,6 +13,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -540,6 +541,15 @@ public class HostAPI {
 
         return list;
     }
+    @LuaWhitelist
+    @LuaMethodDoc(
+            value = "host.update_statistics",
+            aliases = "updateStats"
+    )
+    public void updateStatistics() {
+        this.minecraft.getConnection().send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.REQUEST_STATS)); // in theory, this cant nullptr; if it does, ill fix later
+    }
+    public void updateStats() {updateStatistics();}
 
     @LuaWhitelist
     @LuaMethodDoc(
