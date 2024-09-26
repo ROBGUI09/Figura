@@ -7,7 +7,6 @@ import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
