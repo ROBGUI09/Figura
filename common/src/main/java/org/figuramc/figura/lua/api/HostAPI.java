@@ -7,6 +7,7 @@ import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -546,18 +547,20 @@ public class HostAPI {
             value = "host.get_general_statistics",
             aliases = "getGeneralStats"
     )
-    public Map<String, Integer> getGeneralStatistics() {
-        Map<String, Integer> map = new HashMap<>();
+    public Map<String, Double> getGeneralStatistics() {
+        Map<String, Double> map = new HashMap<>();
         LocalPlayer player = this.minecraft.player;
         if (player == null || !isHost()) return map;
         for (Stat<?> stat : Stats.CUSTOM) {
             String name = stat.getName().replace("minecraft.custom:minecraft.",""); // turn registry to translation key
-            map.put(name, player.getStats().getValue(stat));
+            String formatted = stat.format(player.getStats().getValue(stat)).replaceAll("[^\\d.]", ""); // remove things that aren't digits or periods
+            double finalValue = Double.parseDouble(formatted);
+            map.put(name, finalValue);
         }
         return map;
     }
     @LuaWhitelist
-    public Map<String, Integer> getGeneralStats() { return getGeneralStatistics(); }
+    public Map<String, Double> getGeneralStats() { return getGeneralStatistics(); }
 
     @LuaWhitelist
     @LuaMethodDoc(
@@ -575,7 +578,7 @@ public class HostAPI {
         String itemKey;
         ItemStackAPI stack;
         if (id instanceof String) {
-            stack = WorldAPI.newItem(id.toString(), 1, null);
+            stack = WorldAPI.newItem(id.toString(), 1, null); // this handles errors for me and im lazy
             itemKey = id.toString();
         } else {
             stack = (ItemStackAPI) id;
@@ -624,7 +627,7 @@ public class HostAPI {
     @LuaWhitelist
     @LuaMethodDoc(
             value = "host.get_entity_statistic",
-            aliases = "getEntityStat",
+            aliases = "get_entity_stat",
             overloads = @LuaMethodOverload(
                     argumentTypes = EntityAPI.class,
                     argumentNames = "entity"
