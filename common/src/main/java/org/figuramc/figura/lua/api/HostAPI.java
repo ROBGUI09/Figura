@@ -576,10 +576,16 @@ public class HostAPI {
     @LuaMethodDoc(
             value = "host.get_item_statistic",
             aliases = "getItemStat",
-            overloads = @LuaMethodOverload(
-                    argumentTypes = ItemStackAPI.class,
-                    argumentNames = "item"
-            )
+            overloads = {
+                    @LuaMethodOverload(
+                            argumentTypes = ItemStackAPI.class,
+                            argumentNames = "item"
+                    ),
+                    @LuaMethodOverload(
+                            argumentTypes = {String.class},
+                            argumentNames = "id"
+                    )
+            }
     )
     public Map<String, Integer> getItemStatistic(Object id) {
         Map<String, Integer> map = new HashMap<>();
@@ -637,11 +643,7 @@ public class HostAPI {
     @LuaWhitelist
     @LuaMethodDoc(
             value = "host.get_entity_statistic",
-            aliases = "get_entity_stat",
-            overloads = @LuaMethodOverload(
-                    argumentTypes = EntityAPI.class,
-                    argumentNames = "entity"
-            )
+            aliases = "get_entity_stat"
     )
     public Map<String, Integer> getEntityStatistic(String type) {
         Map<String, Integer> map = new HashMap<>();
