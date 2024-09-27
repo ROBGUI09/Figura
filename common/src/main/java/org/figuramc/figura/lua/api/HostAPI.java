@@ -643,8 +643,12 @@ public class HostAPI {
     @LuaWhitelist
     @LuaMethodDoc(
             value = "host.get_entity_statistic",
-            aliases = "get_entity_stat"
-    )
+            aliases = "get_entity_stat",
+            overloads = @LuaMethodOverload(
+                            argumentTypes = String.class,
+                            argumentNames = "type"
+                    )
+            )
     public Map<String, Integer> getEntityStatistic(String type) {
         Map<String, Integer> map = new HashMap<>();
         LocalPlayer player = this.minecraft.player;
