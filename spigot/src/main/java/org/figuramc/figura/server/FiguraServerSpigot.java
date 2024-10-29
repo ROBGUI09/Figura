@@ -30,6 +30,7 @@ public class FiguraServerSpigot extends FiguraServer implements PluginMessageLis
     @Override
     protected void sendPacketInternal(UUID receiver, Packet packet) {
         Player player = Bukkit.getPlayer(receiver);
+        if (player == null) return;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStreamByteBuf buf = new OutputStreamByteBuf(baos);
         packet.write(buf);

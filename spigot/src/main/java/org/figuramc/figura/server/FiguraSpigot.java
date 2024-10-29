@@ -42,18 +42,10 @@ public class FiguraSpigot extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         var player = event.getPlayer();
-        var uuid = player.getUniqueId();
         for (Identifier ident: FiguraServerSpigot.OUTCOMING_PACKETS) {
             call(player, "addChannel", CHANNEL_ARGS, ident.toString());
             srv.logDebug("Registered %s for %s".formatted(ident, player.getName()));
         }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                srv.sendHandshake(uuid);
-                srv.userManager().onUserJoin(uuid);
-            }
-        }.runTaskLater(this, 30);
     }
 
     @EventHandler
