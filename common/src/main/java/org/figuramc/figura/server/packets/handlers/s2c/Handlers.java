@@ -7,10 +7,12 @@ import org.figuramc.figura.server.packets.s2c.*;
 import org.figuramc.figura.server.utils.Identifier;
 
 import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 public class Handlers {
     private static final HashMap<Identifier, S2CPacketHandler<?>> PACKET_HANDLERS = new HashMap<>() {{
         put(S2CBackendHandshakePacket.PACKET_ID, new S2CHandshakeHandler());
+        put(S2CRefusedPacket.PACKET_ID, new S2CRefusalHandler());
         put(S2CUserdataPacket.PACKET_ID, new S2CUserdataHandler());
         put(AvatarDataPacket.PACKET_ID, new S2CAvatarDataPacketHandler());
         put(CloseOutcomingStreamPacket.PACKET_ID, new CloseIncomingStreamPacketHandler());
@@ -21,6 +23,10 @@ public class Handlers {
         put(S2CNotifyPacket.PACKET_ID, new S2CNotifyPacketHandler());
         put(CustomFSBPacket.PACKET_ID, new S2CCustomFSBPacketHandler());
     }};
+
+    public static void forEachHandler(BiConsumer<Identifier, S2CPacketHandler<?>> consumer) {
+        PACKET_HANDLERS.forEach(consumer);
+    }
 
     public static S2CPacketHandler<Packet> getHandler(Identifier identifier) {
         return (S2CPacketHandler<Packet>) PACKET_HANDLERS.get(identifier);

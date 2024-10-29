@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 
 public abstract class FiguraServer {
     private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -51,6 +52,10 @@ public abstract class FiguraServer {
 
         put(AvatarDataPacket.PACKET_ID, new C2SAvatarDataPacketHandler(FiguraServer.this));
     }};
+
+    public void forEachHandler(BiConsumer<Identifier, C2SPacketHandler<?>> consumer) {
+        PACKET_HANDLERS.forEach(consumer);
+    }
 
     public static final List<Identifier> OUTCOMING_PACKETS = List.of(
             S2CBackendHandshakePacket.PACKET_ID,
@@ -140,7 +145,7 @@ public abstract class FiguraServer {
         return (C2SPacketHandler<Packet>) PACKET_HANDLERS.get(id);
     }
 
-    public final void close() {
+    public void close() {
         logInfo("Closing FSB");
         avatarManager.close();
         userManager.close();
@@ -160,12 +165,6 @@ public abstract class FiguraServer {
                 config.avatarSizeLimit(),
                 config.avatarsCountLimit()
         );
-    }
-
-    public final void sendHandshake(UUID receiver) {
-        if (Events.call(new HandshakeEvent(receiver)).isCancelled()) return;
-        userManager.expect(receiver);
-        sendPacket(receiver, getHandshake());
     }
 
     public FiguraServerConfig config() {

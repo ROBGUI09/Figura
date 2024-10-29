@@ -25,9 +25,9 @@ public final class FiguraUser {
 
     private final HashMap<String, EHashPair> ownedAvatars;
 
-    public FiguraUser(UUID player, boolean online, boolean allowPings, boolean allowAvatars, BitSet prideBadges, HashMap<String, EHashPair> equippedAvatars, HashMap<String, EHashPair> ownedAvatars) {
+    public FiguraUser(UUID player, BitSet prideBadges, HashMap<String, EHashPair> equippedAvatars, HashMap<String, EHashPair> ownedAvatars) {
         this.player = player;
-        this.online = online;
+        this.online = false;
         this.prideBadges = prideBadges;
         this.equippedAvatars = equippedAvatars;
         this.ownedAvatars = ownedAvatars;
@@ -105,7 +105,7 @@ public final class FiguraUser {
             InputStreamByteBuf buf = new InputStreamByteBuf(fis);
             return load(player, buf);
         } catch (FileNotFoundException e) {
-            return new FiguraUser(player, true, false, false, new BitSet(), new HashMap<>(), new HashMap<>());
+            return new FiguraUser(player, new BitSet(), new HashMap<>(), new HashMap<>());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -131,7 +131,7 @@ public final class FiguraUser {
             Hash ehash = buf.readHash();
             ownedAvatars.put(id, new EHashPair(hash, ehash));
         }
-        return new FiguraUser(player, false, false, false, prideBadges, equippedAvatars, ownedAvatars);
+        return new FiguraUser(player, prideBadges, equippedAvatars, ownedAvatars);
     }
 
     public Hash findEHash(Hash hash) {

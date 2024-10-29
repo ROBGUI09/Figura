@@ -37,18 +37,4 @@ public abstract class ClientPacketListenerMixin {
         if (avatar != null && avatar.totemEvent())
             ci.cancel();
     }
-
-    @Inject(method = "handleCustomPayload", at = @At("HEAD"), cancellable = true)
-    private void onCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
-        S2CPacketHandler<Packet> handler = Handlers.getHandler(packet.getIdentifier());
-        if (handler != null) {
-            Packet p = handler.serialize(new FriendlyByteBufWrapper(packet.getData()));
-            try {
-                handler.handle(p);
-            } catch (Exception e) {
-                FiguraMod.LOGGER.error("", e);
-            }
-            ci.cancel();
-        }
-    }
 }

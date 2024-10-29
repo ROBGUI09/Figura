@@ -14,28 +14,14 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.UUID;
 
-public class FiguraModServer extends FiguraServer {
-    public static final Logger LOGGER = LoggerFactory.getLogger("FSB");
-    private final MinecraftServer parent;
-    public FiguraModServer(MinecraftServer parent) {
-        this.parent = parent;
-    }
+public abstract class FiguraModServer extends FiguraServer {
+    public static final String MOD_ID = "figura";
+    public static final Logger LOGGER = LoggerFactory.getLogger("Figura");
+    private MinecraftServer server;
 
     @Override
     public Path getFiguraFolder() {
         return Path.of("fsb");
-    }
-
-    @Override
-    protected void sendPacketInternal(UUID receiver, Packet packet) {
-        ServerPlayer player = parent.getPlayerList().getPlayer(receiver);
-        if (player != null) {
-            var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
-            packet.write(new FriendlyByteBufWrapper(byteBuf));
-            var id = packet.getId();
-            var path = new ResourceLocation(id.namespace(), id.path());
-            player.connection.send(new ClientboundCustomPayloadPacket(path, byteBuf));
-        }
     }
 
     @Override
@@ -62,5 +48,18 @@ public class FiguraModServer extends FiguraServer {
         return (FiguraModServer) INSTANCE;
     }
 
+    protected MinecraftServer getServer() {
+        return server;
+    }
 
+    @Override
+    public void close() {
+        server = null;
+        super.close();
+    }
+
+    public final void finishInitialization(MinecraftServer server) {
+        if (this.server != null) throw new IllegalStateException("Server already initialized");
+        this.server = server;
+    }
 }

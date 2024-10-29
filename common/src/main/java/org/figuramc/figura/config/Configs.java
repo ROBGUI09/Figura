@@ -303,7 +303,7 @@ public class Configs {
             GUI_FPS = new ConfigType.BoolConfig("gui_fps", DEV, false);
 
     public static final ConfigType.ButtonConfig REGENERATE_KEY =
-            new ConfigType.ButtonConfig("regen_key", DEV, FSB::regenerateKey);
+            new ConfigType.ButtonConfig("regen_key", DEV, () -> FSB.instance().regenerateKey());
 
     // -- NETWORKING -- //
     public static final ConfigType.BoolConfig ALLOW_NETWORKING =

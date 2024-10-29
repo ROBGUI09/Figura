@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 public final class FiguraUserManager {
     private final FiguraServer parent;
     private final HashMap<UUID, FiguraUser> users = new HashMap<>();
-    private final LinkedList<UUID> expectedUsers = new LinkedList<>();
     private int pingsTickCounter = 0;
 
     public FiguraUserManager(FiguraServer parent) {
@@ -27,36 +26,15 @@ public final class FiguraUserManager {
         return users.get(playerUUID);
     }
 
-    public void onUserJoin(UUID player) {
-
-    }
-
     public FiguraUser getUser(UUID player) {
         return users.computeIfAbsent(player, (p) -> loadPlayerData(player));
     }
 
-    private CompletableFuture<FiguraUser> wrapHandle(Either<FiguraUser, FutureHandle> handle) {
-        if (handle.isA()) return CompletableFuture.completedFuture(handle.a());
-        FutureHandle futureHandle = handle.b();
-        CompletableFuture<FiguraUser> future = futureHandle.future;
-        if (future.isDone()) {
-            try {
-                FiguraUser user = future.join();
-                handle.setA(user);
-                return CompletableFuture.completedFuture(user);
-            }
-            catch (Exception e) {
-                Events.call(new UserLoadingExceptionEvent(futureHandle.user, e));
-            }
-        }
-        return future;
-    }
-
-    public void setupOnlinePlayer(UUID uuid) {
+    public FiguraUser setupOnlinePlayer(UUID uuid) {
         FiguraUser user = getUser(uuid);
-        expectedUsers.remove(uuid); // This is called either way just to remove it in case if it was first time initialization
         user.setOnline();
         user.update();
+        return user;
     }
 
 
@@ -90,16 +68,6 @@ public final class FiguraUserManager {
                 user.save(parent.getUserdataFile(user.uuid()));
         }
         users.clear();
-    }
-
-    public void expect(UUID user) {
-        if (!expectedUsers.contains(user)) {
-            expectedUsers.add(user);
-        }
-    }
-
-    public boolean isExpected(UUID user) {
-        return expectedUsers.contains(user);
     }
 
     public void tick() {

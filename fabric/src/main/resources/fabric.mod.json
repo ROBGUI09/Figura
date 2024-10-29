@@ -24,6 +24,9 @@
     "client": [
       "org.figuramc.figura.fabric.FiguraModFabric"
     ],
+    "server": [
+      "org.figuramc.figura.fabric.FiguraServerFabric"
+    ],
     "modmenu": [
       "org.figuramc.figura.config.fabric.ModMenuConfig"
     ]

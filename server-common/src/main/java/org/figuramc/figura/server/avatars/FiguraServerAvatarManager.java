@@ -280,8 +280,8 @@ public final class FiguraServerAvatarManager {
         }
 
         private void sendTo(UUID receiver, int streamId) {
-            streams.add(new AvatarOutcomingStream(receiver, data, streamId,
-                    hash, metadata.getOwnerEHash(receiver)));
+            streams.add(new AvatarOutcomingStream(receiver, getAvatarData(), streamId,
+                    hash, getMetadata().getOwnerEHash(receiver)));
         }
 
         private AvatarData getAvatarData() {

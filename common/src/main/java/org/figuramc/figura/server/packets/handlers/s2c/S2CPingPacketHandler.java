@@ -12,6 +12,6 @@ public class S2CPingPacketHandler implements S2CPacketHandler<S2CPingPacket> {
 
     @Override
     public void handle(S2CPingPacket packet) {
-        FSB.handlePing(packet);
+        FSB.instance().handlePing(packet);
     }
 }

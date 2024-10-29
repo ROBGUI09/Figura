@@ -26,7 +26,7 @@ public interface Packet {
         put(C2SPingPacket.PACKET_ID, C2SPingPacket::new);
         put(C2SUploadAvatarPacket.PACKET_ID, C2SUploadAvatarPacket::new);
 
-        put(S2CConnectedPacket.PACKET_ID, (buf) -> new S2CConnectedPacket());
+        put(S2CRefusedPacket.PACKET_ID, (buf) -> new S2CRefusedPacket());
         put(S2CBackendHandshakePacket.PACKET_ID, S2CBackendHandshakePacket::new);
         put(S2CInitializeAvatarStreamPacket.PACKET_ID, S2CInitializeAvatarStreamPacket::new);
         put(S2COwnedAvatarsPacket.PACKET_ID, S2COwnedAvatarsPacket::new);

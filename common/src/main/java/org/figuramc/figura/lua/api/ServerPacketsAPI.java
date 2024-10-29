@@ -42,10 +42,11 @@ public class ServerPacketsAPI {
             value = "server_packets.send_packet"
     )
     public void sendPacket(@LuaNotNil String id, FiguraBuffer data) {
-        if (!(isHost && FSB.connected())) return;
+        var fsb = FSB.instance();
+        if (!(isHost && fsb.connected())) return;
         try {
             byte[] bytes = data != null ? data.asInputStream().readAllBytes() : new byte[0];
-            FSB.sendPacket(new CustomFSBPacket(id.hashCode(), bytes));
+            fsb.sendPacket(new CustomFSBPacket(id.hashCode(), bytes));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

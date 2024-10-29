@@ -7,7 +7,7 @@ import org.figuramc.figura.server.utils.IFriendlyByteBuf;
 public class S2CUserdataHandler extends ConnectedPacketHandler<S2CUserdataPacket> {
     @Override
     protected void handlePacket(S2CUserdataPacket packet) {
-        FSB.handleUserdata(packet);
+        FSB.instance().handleUserdata(packet);
     }
 
     @Override

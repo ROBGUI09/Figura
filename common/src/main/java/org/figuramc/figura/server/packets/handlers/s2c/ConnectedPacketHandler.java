@@ -7,7 +7,7 @@ import org.figuramc.figura.server.utils.IFriendlyByteBuf;
 public abstract class ConnectedPacketHandler<T extends Packet> implements S2CPacketHandler<T> {
     @Override
     public void handle(T packet) {
-        if (FSB.connected()) handlePacket(packet);
+        if (FSB.instance().connected()) handlePacket(packet);
     }
 
     protected abstract void handlePacket(T packet);

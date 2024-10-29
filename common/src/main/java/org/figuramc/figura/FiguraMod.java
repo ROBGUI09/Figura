@@ -84,7 +84,7 @@ public class FiguraMod {
     public static void tick() {
         pushProfiler("network");
         NetworkStuff.tick();
-        FSB.tick();
+        FSB.instance().tick();
         popPushProfiler("files");
         LocalAvatarLoader.tick();
         LocalAvatarFetcher.tick();

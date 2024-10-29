@@ -12,12 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerList.class)
 public class PlayerListMixin {
-    @Inject(method = "placeNewPlayer", at = @At("RETURN"))
-    private void onPlayerConnect(Connection connection, ServerPlayer player, CallbackInfo ci) {
+    @Inject(method = "remove", at = @At("HEAD"))
+    private void onPlayerDisconnect(ServerPlayer player, CallbackInfo ci) {
         var srv = FiguraModServer.getInstance();
         if (FiguraServer.initialized()) {
-            srv.sendHandshake(player.getUUID());
-            srv.userManager().onUserJoin(player.getUUID());
+            srv.userManager().onUserLeave(player.getUUID());
         }
     }
 }
