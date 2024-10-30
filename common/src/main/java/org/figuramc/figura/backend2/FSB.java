@@ -111,11 +111,12 @@ public abstract class FSB {
     public void onDisconnect() {
         s2CHandshake = null;
         state = State.Uninitialized;
+        handshakeTick = 0;
+        handshakeAttempts = 0;
         inputStreams.clear();
         outputStreams.clear();
         nextInputId = 0;
         nextOutputId = 0;
-        NetworkStuff.backendStatus = 1;
         // TODO: Handling disconnecting properly, closing all incoming/outcoming streams, etc.
     }
 

@@ -15,7 +15,7 @@ import static org.figuramc.figura.server.SpigotUtils.call;
 public class FiguraSpigot extends JavaPlugin implements Listener {
     private FiguraServerSpigot srv;
     private BukkitTask tickTask;
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     @Override
     public void onEnable() {
         srv = new FiguraServerSpigot(this);

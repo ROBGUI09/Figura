@@ -178,10 +178,6 @@ public final class FiguraUser {
     public void replaceOrAddEquippedAvatar(String avatarId, Hash hash, Hash ehash) {
         equippedAvatars.put(avatarId, new EHashPair(hash, ehash));
         FiguraServer.getInstance().avatarManager().getAvatarMetadata(hash).equipped().put(uuid(), ehash);
-        FiguraServer.getInstance().userManager().forEachUser(user -> {
-            if (user != this)
-                user.sendDeferredPacket(CompletableFuture.supplyAsync(() -> new S2CNotifyPacket(this.uuid())));
-        });
     }
 
     public int getAvatarsCountWithId(String avatarId) {
