@@ -73,14 +73,13 @@ public abstract class FSB {
         if (fsbAllowed() && state == State.HandshakeSent) {
             s2CHandshake = packet;
             state = State.Connected;
-            sendPacket(new C2SBackendHandshakePacket());
             FiguraToast.sendToast(FiguraText.of("backend.fsb_connected"));
             AvatarManager.clearAllAvatars();
         }
     }
 
     public void handleConnectionRefusal() {
-
+        state = State.Refused;
     }
 
     public void getUser(UserData userData) {
