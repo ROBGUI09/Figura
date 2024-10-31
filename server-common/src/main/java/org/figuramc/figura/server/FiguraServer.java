@@ -32,9 +32,7 @@ public abstract class FiguraServer {
     private final FiguraUserManager userManager = new FiguraUserManager(this);
     private final FiguraServerAvatarManager avatarManager = new FiguraServerAvatarManager(this);
     private FiguraServerConfig config = new FiguraServerConfig();
-    private final DeferredPacketsQueue deferredPacketsQueue = new DeferredPacketsQueue(this);
     private final FiguraCustomPackets customPackets = new FiguraCustomPackets();
-    private boolean initialized;
     protected FiguraServer() {
         if (INSTANCE != null) throw new IllegalStateException("Can't create more than one instance of FiguraServer");
         INSTANCE = this;
@@ -118,7 +116,6 @@ public abstract class FiguraServer {
         loadConfig();
         getUsersFolder().toFile().mkdirs();
         getAvatarsFolder().toFile().mkdirs();
-        initialized = true;
         logInfo("Initialization complete.");
     }
 
@@ -156,7 +153,6 @@ public abstract class FiguraServer {
     }
 
     public final void tick() {
-        deferredPacketsQueue.tick();
         avatarManager.tick();
         userManager().tick();
     }
@@ -184,10 +180,6 @@ public abstract class FiguraServer {
         if (!event.isCancelled()) {
             sendPacketInternal(receiver, packet);
         }
-    }
-
-    public final synchronized void sendDeferredPacket(UUID receiver, CompletableFuture<? extends Packet> packet) {
-        deferredPacketsQueue.sendPacket(receiver, packet);
     }
 
     protected abstract void sendPacketInternal(UUID receiver, Packet packet);
