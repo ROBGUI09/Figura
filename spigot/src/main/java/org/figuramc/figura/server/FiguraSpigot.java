@@ -10,12 +10,15 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.figuramc.figura.server.utils.Identifier;
 
+import java.util.Objects;
+
 import static org.figuramc.figura.server.SpigotUtils.call;
 
 public class FiguraSpigot extends JavaPlugin implements Listener {
     private FiguraServerSpigot srv;
     private BukkitTask tickTask;
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = Objects.equals(System.getProperty("figuraDebug"), "true");
+
     @Override
     public void onEnable() {
         srv = new FiguraServerSpigot(this);
