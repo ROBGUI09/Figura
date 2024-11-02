@@ -41,4 +41,30 @@ public interface Packet {
         put(CloseOutcomingStreamPacket.PACKET_ID, CloseOutcomingStreamPacket::new);
         put(CustomFSBPacket.PACKET_ID, CustomFSBPacket::new);
     }};
+
+    HashMap<Identifier, Side> PACKET_SIDES = new HashMap<>() {{
+        put(C2SBackendHandshakePacket.PACKET_ID, Side.CLIENT);
+        put(C2SDeleteAvatarPacket.PACKET_ID, Side.CLIENT);
+        put(C2SEquipAvatarsPacket.PACKET_ID, Side.CLIENT);
+        put(C2SFetchAvatarPacket.PACKET_ID, Side.CLIENT);
+        put(C2SFetchOwnedAvatarsPacket.PACKET_ID, Side.CLIENT);
+        put(C2SFetchUserdataPacket.PACKET_ID, Side.CLIENT);
+        put(C2SPingPacket.PACKET_ID, Side.CLIENT);
+        put(C2SUploadAvatarPacket.PACKET_ID, Side.CLIENT);
+
+        put(S2CRefusedPacket.PACKET_ID, Side.SERVER);
+        put(S2CBackendHandshakePacket.PACKET_ID, Side.SERVER);
+        put(S2CInitializeAvatarStreamPacket.PACKET_ID, Side.SERVER);
+        put(S2COwnedAvatarsPacket.PACKET_ID, Side.SERVER);
+        put(S2CPingErrorPacket.PACKET_ID, Side.SERVER);
+        put(S2CPingPacket.PACKET_ID, Side.SERVER);
+        put(S2CUserdataPacket.PACKET_ID, Side.SERVER);
+        put(S2CNotifyPacket.PACKET_ID, Side.SERVER);
+
+        put(AllowIncomingStreamPacket.PACKET_ID, Side.BOTH);
+        put(AvatarDataPacket.PACKET_ID, Side.BOTH);
+        put(CloseIncomingStreamPacket.PACKET_ID, Side.BOTH);
+        put(CloseOutcomingStreamPacket.PACKET_ID, Side.BOTH);
+        put(CustomFSBPacket.PACKET_ID, Side.BOTH);
+    }};
 }
