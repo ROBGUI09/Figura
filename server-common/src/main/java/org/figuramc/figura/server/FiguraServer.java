@@ -2,14 +2,17 @@ package org.figuramc.figura.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.figuramc.figura.server.avatars.EHashPair;
 import org.figuramc.figura.server.avatars.FiguraServerAvatarManager;
 import org.figuramc.figura.server.events.Events;
-import org.figuramc.figura.server.events.HandshakeEvent;
 import org.figuramc.figura.server.events.packets.OutcomingPacketEvent;
+import org.figuramc.figura.server.json.EHashPairSerializer;
+import org.figuramc.figura.server.json.HashSerializer;
 import org.figuramc.figura.server.packets.*;
 import org.figuramc.figura.server.packets.c2s.*;
 import org.figuramc.figura.server.packets.handlers.c2s.*;
 import org.figuramc.figura.server.packets.s2c.*;
+import org.figuramc.figura.server.utils.Hash;
 import org.figuramc.figura.server.utils.Identifier;
 import org.figuramc.figura.server.utils.Utils;
 
@@ -23,11 +26,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 public abstract class FiguraServer {
-    private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public final Gson GSON = new GsonBuilder().setPrettyPrinting()
+            .registerTypeAdapter(Hash.class, new HashSerializer())
+            .registerTypeAdapter(EHashPair.class, new EHashPairSerializer())
+            .create();
     protected static FiguraServer INSTANCE;
     private final FiguraUserManager userManager = new FiguraUserManager(this);
     private final FiguraServerAvatarManager avatarManager = new FiguraServerAvatarManager(this);
@@ -103,10 +108,20 @@ public abstract class FiguraServer {
     }
 
     public Path getAvatarMetadata(byte[] hash) {
+        return getAvatarsFolder().resolve("%s.mtd.json".formatted(Utils.hexFromBytes(hash)));
+    }
+
+    @Deprecated(forRemoval = true)
+    public Path getOldAvatarMetadata(byte[] hash) {
         return getAvatarsFolder().resolve("%s.mtd".formatted(Utils.hexFromBytes(hash)));
     }
 
     public Path getUserdataFile(UUID user) {
+        return getUsersFolder().resolve("%s.pl.json".formatted(Utils.uuidToHex(user)));
+    }
+
+    @Deprecated(forRemoval = true)
+    public Path getOldUserdataFile(UUID user) {
         return getUsersFolder().resolve("%s.pl".formatted(Utils.uuidToHex(user)));
     }
 

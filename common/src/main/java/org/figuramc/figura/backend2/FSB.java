@@ -147,11 +147,13 @@ public abstract class FSB {
         if (user != null) {
             boolean isHost = FiguraMod.isLocal(user.id);
             ArrayList<Pair<String, Pair<String, UUID>>> list = new ArrayList<>();
-            packet.avatars().forEach((id, hashPair) -> {
+            org.figuramc.figura.server.utils.Pair<String, EHashPair> avatar = packet.avatar();
+            if (avatar != null) {
+                EHashPair hashPair = avatar.right();
                 if (!isHost || getEHash(hashPair.hash()).equals(hashPair.ehash())) {
-                    list.add(new Pair<>(hashPair.hash().toString(), new Pair<>(id, user.id)));
+                    list.add(new Pair<>(hashPair.hash().toString(), new Pair<>(avatar.left(), user.id)));
                 }
-            });
+            }
             user.loadData(list, new Pair<>(packet.prideBadges(), new BitSet()));
             awaitingUserdata.remove(packet.target());
         }
