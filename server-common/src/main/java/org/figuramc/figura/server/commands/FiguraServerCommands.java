@@ -1,16 +1,15 @@
 package org.figuramc.figura.server.commands;
 
 
-import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.tree.RootCommandNode;
 
 import java.util.function.Predicate;
 
 public class FiguraServerCommands {
+    public static final LiteralCommandNode<FiguraServerCommandSource> AVATAR = FiguraAvatarCommand.getCommand();
 
-    public static final LiteralCommandNode<FiguraCommandSource> AVATAR = FiguraAvatarCommand.getCommand();
-
-    public static class PermissionPredicate implements Predicate<FiguraCommandSource> {
+    public static class PermissionPredicate implements Predicate<FiguraServerCommandSource> {
         public final String permission;
 
         public PermissionPredicate(String permission) {
@@ -18,7 +17,7 @@ public class FiguraServerCommands {
         }
 
         @Override
-        public boolean test(FiguraCommandSource source) {
+        public boolean test(FiguraServerCommandSource source) {
             return source.permission(permission);
         }
     }

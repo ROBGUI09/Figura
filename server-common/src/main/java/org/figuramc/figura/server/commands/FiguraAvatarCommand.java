@@ -23,8 +23,8 @@ import static org.figuramc.figura.server.commands.FiguraServerCommands.permissio
 import static org.figuramc.figura.server.utils.ComponentUtils.text;
 
 public class FiguraAvatarCommand {
-    public static LiteralCommandNode<FiguraCommandSource> getCommand() {
-        LiteralArgumentBuilder<FiguraCommandSource> avatarCommand = literal("avatar");
+    public static LiteralCommandNode<FiguraServerCommandSource> getCommand() {
+        LiteralArgumentBuilder<FiguraServerCommandSource> avatarCommand = literal("avatar");
 
         avatarCommand.then(immortalizeCommand());
         avatarCommand.then(setAvatarCommand());
@@ -36,12 +36,12 @@ public class FiguraAvatarCommand {
 
     // COMMAND BUILDERS
 
-    private static LiteralArgumentBuilder<FiguraCommandSource> immortalizeCommand() {
-        LiteralArgumentBuilder<FiguraCommandSource> immortalize = literal("immortalize");
+    private static LiteralArgumentBuilder<FiguraServerCommandSource> immortalizeCommand() {
+        LiteralArgumentBuilder<FiguraServerCommandSource> immortalize = literal("immortalize");
         immortalize.requires(permissionCheck("figura.avatars.immortalize"));
         immortalize.executes(FiguraAvatarCommand::immortalizeEquippedAvatar);
 
-        RequiredArgumentBuilder<FiguraCommandSource, String> immortalizeSpecific = argument("avatar_hash", StringArgumentType.string());
+        RequiredArgumentBuilder<FiguraServerCommandSource, String> immortalizeSpecific = argument("avatar_hash", StringArgumentType.string());
         immortalizeSpecific.executes(FiguraAvatarCommand::immortalizeSpecificAvatar);
 
         immortalize.then(immortalizeSpecific);
@@ -49,15 +49,15 @@ public class FiguraAvatarCommand {
         return immortalize;
     }
 
-    private static LiteralArgumentBuilder<FiguraCommandSource> setAvatarCommand() {
-        LiteralArgumentBuilder<FiguraCommandSource> setAvatar = literal("set");
+    private static LiteralArgumentBuilder<FiguraServerCommandSource> setAvatarCommand() {
+        LiteralArgumentBuilder<FiguraServerCommandSource> setAvatar = literal("set");
         setAvatar.requires(permissionCheck("figura.avatars.set"));
 
-        RequiredArgumentBuilder<FiguraCommandSource, String> target = argument("target", StringArgumentType.string());
+        RequiredArgumentBuilder<FiguraServerCommandSource, String> target = argument("target", StringArgumentType.string());
         target.executes(FiguraAvatarCommand::setAvatarEquipped);
         setAvatar.then(target);
 
-        RequiredArgumentBuilder<FiguraCommandSource, String> avatarHash = argument("avatar", StringArgumentType.string());
+        RequiredArgumentBuilder<FiguraServerCommandSource, String> avatarHash = argument("avatar", StringArgumentType.string());
         avatarHash.executes(FiguraAvatarCommand::setAvatarSpecific);
         target.then(avatarHash);
 
@@ -68,8 +68,8 @@ public class FiguraAvatarCommand {
 
     // IMMORTALIZED AVATAR EXECUTORS
 
-    private static int immortalizeEquippedAvatar(CommandContext<FiguraCommandSource> ctx) {
-        FiguraCommandSource source = ctx.getSource();
+    private static int immortalizeEquippedAvatar(CommandContext<FiguraServerCommandSource> ctx) {
+        FiguraServerCommandSource source = ctx.getSource();
         FiguraUser executor = source.getExecutor();
         var equipped = executor.equippedAvatar();
         Hash avatar = equipped != null ? equipped.right().hash() : null;
@@ -80,8 +80,8 @@ public class FiguraAvatarCommand {
         return -1;
     }
 
-    private static int immortalizeSpecificAvatar(CommandContext<FiguraCommandSource> ctx) {
-        FiguraCommandSource source = ctx.getSource();
+    private static int immortalizeSpecificAvatar(CommandContext<FiguraServerCommandSource> ctx) {
+        FiguraServerCommandSource source = ctx.getSource();
         Hash avatar;
         try {
             avatar = Utils.parseHash(StringArgumentType.getString(ctx, "avatar_hash"));
@@ -98,7 +98,7 @@ public class FiguraAvatarCommand {
         return immortalize(avatar, source);
     }
 
-    private static int immortalize(Hash avatar, FiguraCommandSource source) {
+    private static int immortalize(Hash avatar, FiguraServerCommandSource source) {
         FiguraServer server = source.getServer();
         UUID fakeUserUUID = UUID.randomUUID();
         FiguraUser fakeUser = server.userManager().getUser(fakeUserUUID);
@@ -109,8 +109,8 @@ public class FiguraAvatarCommand {
 
     // SET AVATAR EXECUTORS
 
-    private static int setAvatarEquipped(CommandContext<FiguraCommandSource> ctx) {
-        FiguraCommandSource source = ctx.getSource();
+    private static int setAvatarEquipped(CommandContext<FiguraServerCommandSource> ctx) {
+        FiguraServerCommandSource source = ctx.getSource();
         FiguraServer server = source.getServer();
         FiguraUser executor = source.getExecutor();
         UUID targetUUID;
@@ -130,8 +130,8 @@ public class FiguraAvatarCommand {
         return setAvatar(source, target, equippedAvatar.right().hash());
     }
 
-    private static int setAvatarSpecific(CommandContext<FiguraCommandSource> ctx) {
-        FiguraCommandSource source = ctx.getSource();
+    private static int setAvatarSpecific(CommandContext<FiguraServerCommandSource> ctx) {
+        FiguraServerCommandSource source = ctx.getSource();
         FiguraServer server = source.getServer();
         UUID targetUUID;
         try {
@@ -158,7 +158,7 @@ public class FiguraAvatarCommand {
         return setAvatar(source, target, avatar);
     }
 
-    private static int setAvatar(FiguraCommandSource source, FiguraUser target, Hash avatar) {
+    private static int setAvatar(FiguraServerCommandSource source, FiguraUser target, Hash avatar) {
         target.setEquippedAvatar("avatar", avatar, Hash.empty());
         source.sendComponent(setAvatarMessage(target.uuid()));
         return 0;
