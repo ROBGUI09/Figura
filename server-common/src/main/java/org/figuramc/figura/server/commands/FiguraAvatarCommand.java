@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
@@ -23,13 +22,13 @@ import static org.figuramc.figura.server.commands.FiguraServerCommands.permissio
 import static org.figuramc.figura.server.utils.ComponentUtils.text;
 
 public class FiguraAvatarCommand {
-    public static LiteralCommandNode<FiguraServerCommandSource> getCommand() {
+    public static LiteralArgumentBuilder<FiguraServerCommandSource> getCommand() {
         LiteralArgumentBuilder<FiguraServerCommandSource> avatarCommand = literal("avatar");
 
         avatarCommand.then(immortalizeCommand());
         avatarCommand.then(setAvatarCommand());
 
-        return avatarCommand.build();
+        return avatarCommand;
     }
 
 

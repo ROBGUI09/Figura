@@ -2,6 +2,7 @@ package org.figuramc.figura.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import org.figuramc.figura.server.avatars.EHashPair;
 import org.figuramc.figura.server.avatars.FiguraServerAvatarManager;
 import org.figuramc.figura.server.events.Events;
@@ -177,6 +178,9 @@ public abstract class FiguraServer {
     }
 
     protected abstract void sendPacketInternal(UUID receiver, Packet packet);
+
+    public abstract boolean getPermission(UUID player, String permission);
+    public abstract void sendMessage(UUID receiver, JsonObject component);
 
     public FiguraServerAvatarManager avatarManager() {
         return avatarManager;

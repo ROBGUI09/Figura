@@ -98,7 +98,8 @@
     "sound.SubtitleOverlayMixin"
   ],
   "server": [
-    "network.server.PlayerListMixin"
+    "network.server.PlayerListMixin",
+    "CommandSourceStackMixin"
   ],
   "injectors": {
     "defaultRequire": 1

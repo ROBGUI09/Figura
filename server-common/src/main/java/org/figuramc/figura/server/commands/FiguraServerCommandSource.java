@@ -1,16 +1,24 @@
 package org.figuramc.figura.server.commands;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.figuramc.figura.server.FiguraServer;
 import org.figuramc.figura.server.FiguraUser;
 
 import java.util.UUID;
 
-public abstract class FiguraServerCommandSource {
-    public abstract FiguraServer getServer();
-    public abstract UUID getExecutorUUID();
-    public abstract FiguraUser getExecutor();
-    public abstract boolean permission(String permission);
-    public abstract void sendMessage(String message);
-    public abstract void sendComponent(JsonElement message);
+public interface FiguraServerCommandSource {
+    default FiguraServer getServer() {
+        return FiguraServer.getInstance();
+    }
+    UUID getExecutorUUID();
+    default FiguraUser getExecutor() {
+        UUID uuid = getExecutorUUID();
+        return uuid != null ? getServer().userManager().getUser(uuid) : null;
+    }
+    default boolean permission(String permission) {
+        return getServer().getPermission(getExecutorUUID(), permission);
+    }
+    default void sendComponent(JsonObject message) {
+        getServer().sendMessage(getExecutorUUID(), message);
+    }
 }

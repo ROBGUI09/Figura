@@ -1,13 +1,18 @@
 package org.figuramc.figura.server.commands;
 
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 
 import java.util.function.Predicate;
 
 public class FiguraServerCommands {
-    public static final LiteralCommandNode<FiguraServerCommandSource> AVATAR = FiguraAvatarCommand.getCommand();
+    private static final LiteralArgumentBuilder<FiguraServerCommandSource> AVATAR = FiguraAvatarCommand.getCommand();
+
+    public static LiteralArgumentBuilder<FiguraServerCommandSource> getCommand() {
+        return null;
+    }
 
     public static class PermissionPredicate implements Predicate<FiguraServerCommandSource> {
         public final String permission;
