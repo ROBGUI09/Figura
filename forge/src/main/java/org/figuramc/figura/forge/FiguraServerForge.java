@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.server.permission.PermissionAPI;
+import net.minecraftforge.server.permission.nodes.PermissionNode;
 import org.figuramc.figura.server.FiguraModServer;
 import org.figuramc.figura.server.packets.Packet;
 import org.figuramc.figura.utils.FriendlyByteBufWrapper;
@@ -27,6 +28,8 @@ public class FiguraServerForge extends FiguraModServer {
 
     @Override
     public boolean getPermission(UUID player, String permission) {
-        return false;
+        ServerPlayer pl = getServer().getPlayerList().getPlayer(player);
+        PermissionNode<Boolean> perm = FiguraForgePermissions.getPermission(permission);
+        return pl != null && perm != null && PermissionAPI.getPermission(pl, perm);
     }
 }

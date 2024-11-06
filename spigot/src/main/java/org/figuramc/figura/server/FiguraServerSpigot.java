@@ -1,5 +1,9 @@
 package org.figuramc.figura.server;
 
+import com.google.gson.JsonObject;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.BaseComponentSerializer;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -50,6 +54,20 @@ public class FiguraServerSpigot extends FiguraServer implements PluginMessageLis
             InputStreamByteBuf buf = new InputStreamByteBuf(bais);
             Packet packet = handler.serialize(buf);
             handler.handle(player.getUniqueId(), packet);
+        }
+    }
+
+    @Override
+    public boolean getPermission(UUID player, String permission) {
+        Player pl = parent.getServer().getPlayer(player);
+        return pl != null && pl.hasPermission(permission);
+    }
+
+    @Override
+    public void sendMessage(UUID receiver, JsonObject component) {
+        Player pl = parent.getServer().getPlayer(receiver);
+        if (pl != null) {
+            pl.spigot().sendMessage(ComponentSerializer.parse(component.toString()));
         }
     }
 

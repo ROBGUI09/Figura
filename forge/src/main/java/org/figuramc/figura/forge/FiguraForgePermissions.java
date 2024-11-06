@@ -12,19 +12,30 @@ import org.figuramc.figura.server.FiguraPermissions;
 import org.figuramc.figura.server.utils.Pair;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 public class FiguraForgePermissions {
 
-    public PermissionNode<Boolean> createNode(Pair<String, Boolean> pair) {
+    private static final HashMap<String, PermissionNode<?>> registeredPermission = new HashMap<>() {{
+        FiguraPermissions.PERMISSIONS_LIST.forEach((pair) -> {
+            put(pair.left(), createNode(pair));
+        });
+    }};
+
+    public static PermissionNode<Boolean> createNode(Pair<String, Boolean> pair) {
         String name = pair.left();
         boolean defaultVal = pair.right();
         return new PermissionNode<>(FiguraModServer.MOD_ID, name, PermissionTypes.BOOLEAN, (a,b,c) -> defaultVal);
     }
 
-    @SuppressWarnings("unchecked")
     @SubscribeEvent
     public void registerPermissions(PermissionGatherEvent.Nodes event) {
-        event.addNodes(((Iterable<PermissionNode<?>>) FiguraPermissions.PERMISSIONS_LIST.stream().map(this::createNode)));
+        event.addNodes(registeredPermission.values());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static PermissionNode<Boolean> getPermission(String permission) {
+        return (PermissionNode<Boolean>) registeredPermission.get(permission);
     }
 }

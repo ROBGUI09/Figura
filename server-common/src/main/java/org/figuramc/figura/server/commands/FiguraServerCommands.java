@@ -2,16 +2,19 @@ package org.figuramc.figura.server.commands;
 
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.mojang.brigadier.tree.RootCommandNode;
+import org.figuramc.figura.server.FiguraServer;
 
 import java.util.function.Predicate;
 
+import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
+
 public class FiguraServerCommands {
-    private static final LiteralArgumentBuilder<FiguraServerCommandSource> AVATAR = FiguraAvatarCommand.getCommand();
 
     public static LiteralArgumentBuilder<FiguraServerCommandSource> getCommand() {
-        return null;
+        LiteralArgumentBuilder<FiguraServerCommandSource> root = literal("fsb");
+        root.then(FiguraAvatarCommand.getCommand());
+        root.then(FiguraBadgesCommand.getCommand());
+        return root;
     }
 
     public static class PermissionPredicate implements Predicate<FiguraServerCommandSource> {
@@ -23,7 +26,13 @@ public class FiguraServerCommands {
 
         @Override
         public boolean test(FiguraServerCommandSource source) {
-            return source.permission(permission);
+            try {
+                return source.permission(permission);
+            }
+            catch (Exception e) {
+                FiguraServer.getInstance().logError("Error occured while processing permission check: ", e);
+                return false;
+            }
         }
     }
 

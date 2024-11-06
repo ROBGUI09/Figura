@@ -36,7 +36,7 @@ public class ComponentUtils {
         JsonObject event = new JsonObject();
         event.addProperty("action","show_text");
         event.add("value", otherComponent);
-        component.add("clickEvent", event);
+        component.add("hoverEvent", event);
         return component;
     }
 

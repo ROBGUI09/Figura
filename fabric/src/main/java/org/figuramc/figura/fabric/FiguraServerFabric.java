@@ -12,6 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.figuramc.figura.commands.fabric.FiguraCommandsFabric;
+import org.figuramc.figura.commands.fabric.FiguraServerCommandsFabric;
 import org.figuramc.figura.server.FiguraModServer;
 import org.figuramc.figura.server.packets.Packet;
 import org.figuramc.figura.server.packets.handlers.c2s.C2SPacketHandler;
@@ -27,6 +29,7 @@ public class FiguraServerFabric extends FiguraModServer implements DedicatedServ
             var resLoc = new ResourceLocation(id.namespace(), id.path());
             ServerPlayNetworking.registerGlobalReceiver(resLoc, new FabricServerHandler<>(handler));
         });
+        FiguraServerCommandsFabric.init();
     }
 
     @Override

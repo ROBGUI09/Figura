@@ -178,12 +178,12 @@ public class FiguraAvatarCommand {
     // IMMORTALIZED AVATAR MESSAGE BUILDERS
 
     private static JsonObject immortalizedAvatarMessage(UUID uuid) {
-        String uuidHex = Utils.uuidToHex(uuid);
+        String uuidHex = uuid.toString();
         return text("Immortalized avatar ").color("blue")
                 .add(text(uuidHex).color("green").style("bold", true)
                         .clickEvent("copy_to_clipboard", uuidHex)
                         .tooltip(text("Click to copy")))
-                .add(text(" is successfully create!")).build();
+                .add(text(" is successfully created!")).build();
     }
 
     private static JsonObject immortalizedAvatarNotEquippedError() {
