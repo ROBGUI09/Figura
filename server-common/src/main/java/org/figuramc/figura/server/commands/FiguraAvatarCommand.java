@@ -27,6 +27,7 @@ public class FiguraAvatarCommand {
 
         avatarCommand.then(immortalizeCommand());
         avatarCommand.then(setAvatarCommand());
+        avatarCommand.then(clearAvatarCommand());
 
         return avatarCommand;
     }
@@ -63,6 +64,16 @@ public class FiguraAvatarCommand {
         return setAvatar;
     }
 
+    private static LiteralArgumentBuilder<FiguraServerCommandSource> clearAvatarCommand() {
+        LiteralArgumentBuilder<FiguraServerCommandSource> clearAvatar = literal("clear");
+        clearAvatar.requires(permissionCheck("figura.avatars.clear"));
+
+        RequiredArgumentBuilder<FiguraServerCommandSource, String> target = argument("target", StringArgumentType.string());
+        target.executes(FiguraAvatarCommand::clearAvatar);
+        clearAvatar.then(target);
+
+        return clearAvatar;
+    }
 
 
     // IMMORTALIZED AVATAR EXECUTORS
@@ -122,7 +133,7 @@ public class FiguraAvatarCommand {
             targetUUID = UUID.fromString(StringArgumentType.getString(ctx, "target"));
         }
         catch (Exception ignored) {
-            source.sendComponent(setAvatarFailedToParseTarget());
+            source.sendComponent(failedToParseTarget());
             return -1;
         }
         FiguraUser target = server.userManager().getUser(targetUUID);
@@ -137,7 +148,7 @@ public class FiguraAvatarCommand {
             targetUUID = UUID.fromString(StringArgumentType.getString(ctx, "target"));
         }
         catch (Exception ignored) {
-            source.sendComponent(setAvatarFailedToParseTarget());
+            source.sendComponent(failedToParseTarget());
             return -1;
         }
         Hash avatar;
@@ -163,6 +174,24 @@ public class FiguraAvatarCommand {
         return 0;
     }
 
+    // CLEAR AVATAR EXECUTOR
+
+    private static int clearAvatar(CommandContext<FiguraServerCommandSource> ctx) {
+        FiguraServerCommandSource source = ctx.getSource();
+        FiguraServer server = source.getServer();
+        UUID targetUUID;
+        try {
+            targetUUID = UUID.fromString(StringArgumentType.getString(ctx, "target"));
+        }
+        catch (Exception ignored) {
+            source.sendComponent(failedToParseTarget());
+            return -1;
+        }
+        FiguraUser target = server.userManager().getUser(targetUUID);
+        target.removeEquippedAvatar();
+        source.sendComponent(text("Avatar for specified target has successfully been cleared.").color("blue").build());
+        return 0;
+    }
 
 
     // COMMON MESSAGE BUILDERS
@@ -173,6 +202,10 @@ public class FiguraAvatarCommand {
 
     private static JsonObject avatarDoesntExist() {
         return text("Avatar with specified hash does not exist..").color("red").build();
+    }
+
+    private static JsonObject failedToParseTarget() {
+        return text("Failed to parse target UUID").color("red").build();
     }
 
     // IMMORTALIZED AVATAR MESSAGE BUILDERS
@@ -201,9 +234,5 @@ public class FiguraAvatarCommand {
 
     private static JsonObject setAvatarNotEquippedError() {
         return text("You have to equip avatar in order to set it to someone.").color("red").build();
-    }
-
-    private static JsonObject setAvatarFailedToParseTarget() {
-        return text("Failed to parse target UUID").color("red").build();
     }
 }
