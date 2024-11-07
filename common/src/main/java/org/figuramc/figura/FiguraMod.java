@@ -90,7 +90,7 @@ public class FiguraMod {
         LocalAvatarFetcher.tick();
         if (Minecraft.getInstance().player != null) {
             popPushProfiler("avatars");
-            AvatarManager.tickLoadedAvatars();
+            AvatarManager.tick();
         }
         popPushProfiler("chatPrint");
         FiguraLuaPrinter.printChatFromQueue();

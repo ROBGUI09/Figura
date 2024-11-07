@@ -35,8 +35,12 @@ import java.util.function.Consumer;
  */
 public class AvatarManager {
 
+    private static final int FETCH_COOLDOWN_TICKS = 10;
+
     private static final Map<UUID, UserData> LOADED_USERS = new ConcurrentHashMap<>();
     private static final Set<UUID> FETCHED_USERS = new HashSet<>();
+    private static final Map<UUID, Integer> FETCH_COOLDOWN = new ConcurrentHashMap<>();
+
 
     private static final Map<Entity, Avatar> LOADED_CEM = new ConcurrentHashMap<>();
 
@@ -54,7 +58,17 @@ public class AvatarManager {
         ParticleAPI.getParticleEngine().figura$clearParticles(null);
     }
 
-    // -- avatar events -- // 
+    // -- avatar events -- //
+
+    public static void tick() {
+        tickLoadedAvatars();
+        FETCH_COOLDOWN.entrySet().removeIf(entry -> {
+            int val = entry.getValue() - 1;
+            if (val <= 0) return true;
+            entry.setValue(val);
+            return false;
+        });
+    }
 
     public static void tickLoadedAvatars() {
         if (panic)
@@ -262,7 +276,7 @@ public class AvatarManager {
 
     // get avatar from the backend
     private static void fetchBackend(UUID id) {
-        if (FETCHED_USERS.contains(id))
+        if (FETCHED_USERS.contains(id) || FETCH_COOLDOWN.containsKey(id))
             return;
 
         FETCHED_USERS.add(id);
