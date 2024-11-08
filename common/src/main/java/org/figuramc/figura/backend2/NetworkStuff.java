@@ -495,6 +495,30 @@ public class NetworkStuff {
         downloadRate.use();
     }
 
+    public static void setBadge(int badgeId) {
+        queueString(Util.NIL_UUID, api -> api.setBadge(badgeId), (code, data) -> {
+            // On error
+            if (code != 200) {
+                FiguraToast.sendToast(FiguraText.of("backend.badge_set_error"), FiguraToast.ToastType.ERROR);
+                return;
+            }
+
+            FiguraToast.sendToast(FiguraText.of("backend.badge_set"));
+        });
+    }
+
+    public static void clearBadge() {
+        queueString(Util.NIL_UUID, HttpAPI::clearBadge, (code, data) -> {
+            // On error
+            if (code != 200) {
+                FiguraToast.sendToast(FiguraText.of("backend.badge_clear_error"), FiguraToast.ToastType.ERROR);
+                return;
+            }
+
+            FiguraToast.sendToast(FiguraText.of("backend.badge_cleared"));
+        });
+    }
+
 
     // -- ws stuff -- //
 

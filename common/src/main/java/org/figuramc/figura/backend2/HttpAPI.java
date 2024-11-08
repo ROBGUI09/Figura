@@ -129,4 +129,13 @@ public class HttpAPI {
     public HttpRequest setEquipped(String json) {
         return header("equip").POST(HttpRequest.BodyPublishers.ofString(json)).header("Content-Type", "application/json").build();
     }
+
+    public HttpRequest setBadge(Integer badgeId) {
+        String badge = badgeId.toString();
+        return header("temp_badge").POST(HttpRequest.BodyPublishers.ofString(badge)).header("Content-Type", "text/plain").build();
+    }
+
+    public HttpRequest clearBadge() {
+        return header("temp_badge").DELETE().build();
+    }
 }
