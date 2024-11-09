@@ -16,17 +16,20 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class S2CUserdataPacket implements Packet {
     public static final Identifier PACKET_ID = new Identifier("figura", "s2c/userdata");
 
+    private final int responseId;
     private final UUID target;
     private final BitSet prideBadges;
     private final @Nullable Pair<String, EHashPair> avatar;
 
-    public S2CUserdataPacket(UUID target, BitSet prideBadges, @Nullable Pair<String, EHashPair> avatar) {
+    public S2CUserdataPacket(int responseId, UUID target, BitSet prideBadges, @Nullable Pair<String, EHashPair> avatar) {
+        this.responseId = responseId;
         this.target = target;
         this.prideBadges = prideBadges;
         this.avatar = avatar;
     }
 
     public S2CUserdataPacket(IFriendlyByteBuf byteBuf) {
+        this.responseId = byteBuf.readInt();
         this.target = byteBuf.readUUID();
         this.prideBadges = BitSet.valueOf(byteBuf.readByteArray(Integer.MAX_VALUE));
         if (byteBuf.readByte() != 0) {
@@ -36,6 +39,10 @@ public class S2CUserdataPacket implements Packet {
             avatar = new Pair<>(avatarId, new EHashPair(hash, ehash));
         }
         else avatar = null;
+    }
+
+    public int responseId() {
+        return responseId;
     }
 
     public UUID target() {
@@ -52,6 +59,7 @@ public class S2CUserdataPacket implements Packet {
 
     @Override
     public void write(IFriendlyByteBuf byteBuf) {
+        byteBuf.writeInt(responseId);
         byteBuf.writeUUID(target);
         byteBuf.writeByteArray(prideBadges.toByteArray());
         if (avatar != null) {

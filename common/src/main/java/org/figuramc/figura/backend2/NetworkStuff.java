@@ -57,7 +57,6 @@ public class NetworkStuff {
     private static final ConcurrentLinkedQueue<Request<HttpAPI>> API_REQUESTS = new ConcurrentLinkedQueue<>();
     private static final ConcurrentLinkedQueue<Request<WebSocket>> WS_REQUESTS = new ConcurrentLinkedQueue<>();
     private static final List<UUID> SUBSCRIPTIONS = new ArrayList<>();
-    private static final ArrayList<AvatarEquipInstruction> AVATAR_EQUIP_INSTRUCTIONS = new ArrayList<>();
     private static CompletableFuture<Void> tasks;
 
     private static final int RECONNECT = 6000; //5 min
@@ -111,13 +110,6 @@ public class NetworkStuff {
         //pings counter
         if (lastPing > 0 && FiguraMod.ticks - lastPing >= 20)
             lastPing = pingsSent = pingsReceived = 0;
-
-        if (!fsb().connected()) {
-            for (AvatarEquipInstruction instruction: AVATAR_EQUIP_INSTRUCTIONS) {
-                instruction.avatar.loadData(instruction.avatars(), instruction.bitPair());
-            }
-        }
-        AVATAR_EQUIP_INSTRUCTIONS.clear();
     }
 
     private static void tickSubscriptions() {
@@ -321,11 +313,16 @@ public class NetworkStuff {
     }
 
     public static void getUser(UserData user) {
-        if (fsb().connected()) {
-            fsb().getUser(user);
+        boolean fetchUser = fsb().isPlayerConnected(user.id) || FiguraMod.isOffline(user.id);
+        if (fsb().connected() && fetchUser) {
+            fsb().getUserAndApply(user);
             return;
         }
 
+        getUserFromBackend(user);
+    }
+
+    public static void getUserFromBackend(UserData user) {
         if (checkUUID(user.id)) {
             return;
         }
@@ -376,8 +373,7 @@ public class NetworkStuff {
                 if (cat != null) PermissionManager.setDefaultFor(user.id, cat);
             }
 
-            // Async breaks a lot of stuff
-            AVATAR_EQUIP_INSTRUCTIONS.add(new AvatarEquipInstruction(user, avatars, badgesPair));
+            user.loadData(avatars, badgesPair);
         });
     }
 
@@ -461,7 +457,7 @@ public class NetworkStuff {
     }
 
     public static void getAvatar(UserData target, UUID owner, String id, String hash) {
-        if (fsb().connected()) {
+        if (target.fromFSB()) {
             fsb().getAvatar(target, hash);
         }
 
@@ -648,6 +644,4 @@ public class NetworkStuff {
             return o instanceof Request request && owner.equals(request.owner);
         }
     }
-
-    private record AvatarEquipInstruction(UserData avatar, ArrayList<Pair<String, Pair<String, UUID>>> avatars, Pair<BitSet, BitSet> bitPair) {}
 }

@@ -15,9 +15,7 @@ import org.figuramc.figura.server.packets.AvatarDataPacket;
 import org.figuramc.figura.server.packets.CloseIncomingStreamPacket;
 import org.figuramc.figura.server.packets.Packet;
 import org.figuramc.figura.server.packets.c2s.*;
-import org.figuramc.figura.server.packets.s2c.S2CBackendHandshakePacket;
-import org.figuramc.figura.server.packets.s2c.S2CPingPacket;
-import org.figuramc.figura.server.packets.s2c.S2CUserdataPacket;
+import org.figuramc.figura.server.packets.s2c.*;
 import org.figuramc.figura.server.utils.Hash;
 import com.mojang.datafixers.util.Pair;
 import org.figuramc.figura.server.utils.StatusCode;
@@ -32,11 +30,12 @@ public abstract class FSB {
     private byte[] key;
     private S2CBackendHandshakePacket s2CHandshake;
     private State state = State.Uninitialized;
-    private final HashMap<UUID, UserData> awaitingUserdata = new HashMap<>();
-    private int nextOutputId;
+    private final HashMap<Integer, UserdataHandler> awaitingUserdata = new HashMap<>();
     private final HashMap<Integer, AvatarOutputStream> outputStreams = new HashMap<>();
-    private int nextInputId;
+    private int nextTransactionId;
     private final HashMap<Integer, AvatarInputStream> inputStreams = new HashMap<>();
+
+    private final HashSet<UUID> connectedPlayers = new HashSet<>();
 
     private int handshakeTick = 0;
     private int handshakeAttempts = 0;
@@ -50,6 +49,12 @@ public abstract class FSB {
 
     public static FSB instance() {
         return instance;
+    }
+
+    public int getNextId() {
+        int id = nextTransactionId;
+        nextTransactionId++;
+        return id;
     }
 
     public State state() {
@@ -74,6 +79,7 @@ public abstract class FSB {
             s2CHandshake = packet;
             state = State.Connected;
             FiguraToast.sendToast(FiguraText.of("backend.fsb_connected"));
+            connectedPlayers.addAll(packet.connectedPlayers());
             AvatarManager.clearAllAvatars();
         }
     }
@@ -82,17 +88,22 @@ public abstract class FSB {
         state = State.Refused;
     }
 
-    public void getUser(UserData userData) {
-        awaitingUserdata.put(userData.id, userData);
-        sendPacket(new C2SFetchUserdataPacket(userData.id));
+    public void getUser(UUID user, UserdataHandler handler) {
+        int id = getNextId();
+        awaitingUserdata.put(id, handler);
+        sendPacket(new C2SFetchUserdataPacket(id, user));
+    }
+
+    public void getUserAndApply(UserData userData) {
+        getUser(userData.id, new UserdataApplier(userData));
     }
 
     public void uploadAvatar(String avatarId, byte[] avatarData) {
-        outputStreams.put(nextOutputId, new AvatarOutputStream(this, avatarId, nextOutputId, avatarData));
+        int id = getNextId();
+        outputStreams.put(id, new AvatarOutputStream(this, avatarId, id, avatarData));
         Hash hash = Utils.getHash(avatarData);
         Hash ehash = getEHash(hash);
-        sendPacket(new C2SUploadAvatarPacket(nextOutputId, avatarId, hash, ehash));
-        nextOutputId++;
+        sendPacket(new C2SUploadAvatarPacket(id, avatarId, hash, ehash));
     }
 
     public void deleteAvatar(String avatarId) {
@@ -114,9 +125,8 @@ public abstract class FSB {
         handshakeAttempts = 0;
         inputStreams.clear();
         outputStreams.clear();
-        nextInputId = 0;
-        nextOutputId = 0;
-        // TODO: Handling disconnecting properly, closing all incoming/outcoming streams, etc.
+        connectedPlayers.clear();
+        nextTransactionId = 0;
     }
 
     public void tick() {
@@ -137,26 +147,36 @@ public abstract class FSB {
 
     public void getAvatar(UserData target, String hash) {
         Hash h = Utils.parseHash(hash);
-        inputStreams.put(nextInputId, new AvatarInputStream(this, nextInputId, h, getEHash(h), target));
-        sendPacket(new C2SFetchAvatarPacket(nextInputId, h));
-        nextInputId++;
+        inputStreams.put(nextTransactionId, new AvatarInputStream(this, nextTransactionId, h, getEHash(h), target));
+        sendPacket(new C2SFetchAvatarPacket(nextTransactionId, h));
+        nextTransactionId++;
     }
 
     public void handleUserdata(S2CUserdataPacket packet) {
-        UserData user = awaitingUserdata.get(packet.target());
-        if (user != null) {
-            boolean isHost = FiguraMod.isLocal(user.id);
-            ArrayList<Pair<String, Pair<String, UUID>>> list = new ArrayList<>();
-            org.figuramc.figura.server.utils.Pair<String, EHashPair> avatar = packet.avatar();
-            if (avatar != null) {
-                EHashPair hashPair = avatar.right();
-                if (!isHost || getEHash(hashPair.hash()).equals(hashPair.ehash())) {
-                    list.add(new Pair<>(hashPair.hash().toString(), new Pair<>(avatar.left(), user.id)));
-                }
-            }
-            user.loadData(list, new Pair<>(packet.prideBadges(), new BitSet()));
-            awaitingUserdata.remove(packet.target());
-        }
+        int id = packet.responseId();
+        UserdataHandler handler = awaitingUserdata.get(id);
+        if (handler != null) handler.handle(packet);
+        awaitingUserdata.remove(id);
+    }
+
+    public void handleUserdataNotFound(S2CUserdataNotFoundPacket packet) {
+        int id = packet.transactionId();
+        UserdataHandler handler = awaitingUserdata.get(id);
+        if (handler != null) handler.userdataNotFound();
+        awaitingUserdata.remove(id);
+    }
+
+    public void handleUserConnected(S2CConnectedPacket packet) {
+        connectedPlayers.add(packet.player());
+        AvatarManager.clearAvatars(packet.player());
+    }
+
+    public void reset(UUID id) {
+        connectedPlayers.remove(id);
+    }
+
+    public boolean isPlayerConnected(UUID id) {
+        return connectedPlayers.contains(id);
     }
 
     public void handleAvatarData(int streamId, byte[] chunk, boolean finalChunk) {
@@ -194,6 +214,20 @@ public abstract class FSB {
         if (avatar == null)
             return;
         avatar.runPing(packet.id(), packet.data());
+    }
+
+    void applyUserData(UserData user, S2CUserdataPacket packet) {
+        boolean isHost = FiguraMod.isLocal(user.id);
+        ArrayList<Pair<String, Pair<String, UUID>>> list = new ArrayList<>();
+        org.figuramc.figura.server.utils.Pair<String, EHashPair> avatar = packet.avatar();
+        if (avatar != null) {
+            EHashPair hashPair = avatar.right();
+            if (!isHost || FSB.instance.getEHash(hashPair.hash()).equals(hashPair.ehash())) {
+                list.add(new Pair<>(hashPair.hash().toString(), new Pair<>(avatar.left(), user.id)));
+            }
+        }
+        user.loadData(list, new Pair<>(packet.prideBadges(), new BitSet()));
+        user.fromFSB(true);
     }
 
     public abstract void sendPacket(Packet packet);
@@ -357,5 +391,28 @@ public abstract class FSB {
         HandshakeSent,
         Connected,
         Refused
+    }
+
+    public interface UserdataHandler {
+        void handle(S2CUserdataPacket userdata);
+        void userdataNotFound();
+    }
+
+    private static class UserdataApplier implements UserdataHandler {
+        private final UserData user;
+
+        private UserdataApplier(UserData user) {
+            this.user = user;
+        }
+
+        @Override
+        public void handle(S2CUserdataPacket packet) {
+            FSB.instance().applyUserData(user, packet);
+        }
+
+        @Override
+        public void userdataNotFound() {
+            NetworkStuff.getUserFromBackend(user);
+        }
     }
 }

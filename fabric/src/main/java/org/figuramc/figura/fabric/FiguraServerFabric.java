@@ -1,18 +1,15 @@
 package org.figuramc.figura.fabric;
 
-import com.google.gson.JsonObject;
 import io.netty.buffer.Unpooled;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import org.figuramc.figura.commands.fabric.FiguraCommandsFabric;
 import org.figuramc.figura.commands.fabric.FiguraServerCommandsFabric;
 import org.figuramc.figura.server.FiguraModServer;
 import org.figuramc.figura.server.packets.Packet;

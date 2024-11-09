@@ -14,7 +14,6 @@ import org.figuramc.figura.backend2.FSB;
 import org.figuramc.figura.backend2.NetworkStuff;
 import org.figuramc.figura.compat.GeckoLibCompat;
 import org.figuramc.figura.compat.SimpleVCCompat;
-import org.figuramc.figura.config.ConfigManager;
 import org.figuramc.figura.config.Configs;
 import org.figuramc.figura.entries.EntryPointManager;
 import org.figuramc.figura.font.Emojis;
@@ -128,6 +127,10 @@ public class FiguraMod {
 
     public static boolean isLocal(UUID other) {
         return getLocalPlayerUUID().equals(other);
+    }
+
+    public static boolean isOffline(UUID other) {
+        return !Minecraft.getInstance().getConnection().getOnlinePlayerIds().contains(other);
     }
 
     /**

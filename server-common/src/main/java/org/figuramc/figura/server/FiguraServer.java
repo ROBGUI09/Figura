@@ -23,10 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public abstract class FiguraServer {
@@ -153,11 +150,14 @@ public abstract class FiguraServer {
     }
 
     public final S2CBackendHandshakePacket getHandshake() {
+        ArrayList<UUID> connectedUsers = new ArrayList<>();
+        userManager.forEachUser(user -> connectedUsers.add(user.uuid()));
         return new S2CBackendHandshakePacket(
                 config.pingsRateLimit(),
                 config.pingsSizeLimit(),
                 config.avatarSizeLimit(),
-                config.avatarsCountLimit()
+                config.avatarsCountLimit(),
+                connectedUsers
         );
     }
 

@@ -18,6 +18,7 @@
     "LivingEntityAccessor",
     "LivingEntityMixin",
     "MinecraftMixin",
+    "PlayerSocialManagerMixin",
     "ReloadableResourceManagerMixin",
     "ServerDataMixin",
     "SkullBlockEntityAccessor",

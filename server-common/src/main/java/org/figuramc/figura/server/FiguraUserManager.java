@@ -24,6 +24,12 @@ public final class FiguraUserManager {
         return users.get(playerUUID);
     }
 
+    public boolean userExists(UUID player) {
+        return users.containsKey(player) ||
+                parent.getUserdataFile(player).toFile().exists() ||
+                parent.getOldUserdataFile(player).toFile().exists();
+    }
+
     public FiguraUser getUser(UUID player) {
         return users.computeIfAbsent(player, (p) -> loadPlayerData(player));
     }
