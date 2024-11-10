@@ -331,15 +331,7 @@ public final class FiguraServerAvatarManager {
                 fis.close();
                 return AvatarMetadata.read(new String(data, StandardCharsets.UTF_8));
             } catch (IOException e) {
-                try {
-                    Path oldAvatarFile = inst.getOldAvatarMetadata(hash.get());
-                    FileInputStream fis = new FileInputStream(oldAvatarFile.toFile());
-                    byte[] data = fis.readAllBytes();
-                    fis.close();
-                    return AvatarMetadata.readOld(data);
-                }  catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+                throw new RuntimeException(e);
             }
         }
 
@@ -467,9 +459,9 @@ public final class FiguraServerAvatarManager {
             }
 
             private void finish() {
-                close(StatusCode.FINISHED);
-                finished = true;
                 parent.userManager().getUser(uploader).replaceOrAddOwnedAvatar(avatarId, hash, ehash);
+                finished = true;
+                close(StatusCode.FINISHED);
             }
 
             private boolean isFinished() {

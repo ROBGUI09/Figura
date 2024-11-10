@@ -378,7 +378,7 @@ public class NetworkStuff {
     }
 
     // TODO: multiple modes of upload (Backend, FSB, Backend + FSB)
-    public static void uploadAvatar(Avatar avatar) {
+    public static void uploadAvatar(Avatar avatar, Destination destination) {
         if (avatar == null || avatar.nbt == null)
             return;
 
@@ -390,53 +390,63 @@ public class NetworkStuff {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             NbtIo.writeCompressed(avatar.nbt, baos);
 
-            if (fsb().connected()) {
+            if (destination.allowFSB()) {
                 fsb().uploadAvatar(id, baos.toByteArray());
-                return;
             }
 
-            queueString(Util.NIL_UUID, api -> api.uploadAvatar(id, baos.toByteArray()), (code, data) -> {
-                responseDebug("uploadAvatar", code, data);
+            if (destination.allowBackend()) {
+                queueString(Util.NIL_UUID, api -> api.uploadAvatar(id, baos.toByteArray()), (code, data) -> {
+                    responseDebug("uploadAvatar", code, data);
 
-                if (code == 200) {
-                    //TODO - profile screen
-                    if (fsb().connected()) fsb().equipAvatar(List.of(Pair.of(id, getHash(baos.toByteArray()))));
-                    else equipAvatar(List.of(Pair.of(avatar.owner, id)));
-                    AvatarManager.localUploaded = true;
-                }
+                    if (code == 200) {
+                        //TODO - profile screen
+                        if (fsb().connected()) fsb().equipAvatar(List.of(Pair.of(id, getHash(baos.toByteArray()))));
+                        else equipAvatar(List.of(Pair.of(avatar.owner, id)));
+                        AvatarManager.localUploaded = true;
+                    }
 
-                //feedback
-                switch (code) {
-                    case 200 -> FiguraToast.sendToast(FiguraText.of("backend.upload_success"));
-                    case 413 -> FiguraToast.sendToast(FiguraText.of("backend.upload_too_big"), FiguraToast.ToastType.ERROR);
-                    case 507 -> FiguraToast.sendToast(FiguraText.of("backend.upload_too_many"), FiguraToast.ToastType.ERROR);
-                    default -> FiguraToast.sendToast(FiguraText.of("backend.upload_error"), FiguraToast.ToastType.ERROR);
-                }
-            });
-            uploadRate.use();
+                    //feedback
+                    switch (code) {
+                        case 200 -> FiguraToast.sendToast(FiguraText.of("backend.upload_success"));
+                        case 413 -> FiguraToast.sendToast(FiguraText.of("backend.upload_too_big"), FiguraToast.ToastType.ERROR);
+                        case 507 -> FiguraToast.sendToast(FiguraText.of("backend.upload_too_many"), FiguraToast.ToastType.ERROR);
+                        default -> FiguraToast.sendToast(FiguraText.of("backend.upload_error"), FiguraToast.ToastType.ERROR);
+                    }
+                });
+                uploadRate.use();
+            }
             baos.close();
         } catch (Exception e) {
             FiguraMod.LOGGER.error("", e);
         }
     }
 
-    public static void deleteAvatar(String avatar) {
+    public static void uploadAvatar(Avatar avatar) {
+        uploadAvatar(avatar, Destination.FSB_OR_BACKEND);
+    }
+
+    public static void deleteAvatar(String avatar, Destination destination) {
         String id = avatar == null || true ? "avatar" : avatar; //TODO - profile screen
 
-        if (fsb().connected()) {
+        if (destination.allowFSB()) {
             fsb().deleteAvatar(id);
-            return;
         }
 
-        queueString(Util.NIL_UUID, api -> api.deleteAvatar(id), (code, data) -> {
-            responseDebug("deleteAvatar", code, data);
+        if (destination.allowBackend()) {
+            queueString(Util.NIL_UUID, api -> api.deleteAvatar(id), (code, data) -> {
+                responseDebug("deleteAvatar", code, data);
 
-            switch (code) {
-                case 200 -> FiguraToast.sendToast(FiguraText.of("backend.delete_success"));
-                case 404 -> FiguraToast.sendToast(FiguraText.of("backend.avatar_not_found"), FiguraToast.ToastType.ERROR);
-                default -> FiguraToast.sendToast(FiguraText.of("backend.delete_error"), FiguraToast.ToastType.ERROR);
-            }
-        });
+                switch (code) {
+                    case 200 -> FiguraToast.sendToast(FiguraText.of("backend.delete_success"));
+                    case 404 -> FiguraToast.sendToast(FiguraText.of("backend.avatar_not_found"), FiguraToast.ToastType.ERROR);
+                    default -> FiguraToast.sendToast(FiguraText.of("backend.delete_error"), FiguraToast.ToastType.ERROR);
+                }
+            });
+        }
+    }
+
+    public static void deleteAvatar(String avatar) {
+        deleteAvatar(avatar, Destination.FSB_OR_BACKEND);
     }
 
     public static void equipAvatar(List<Pair<UUID, String>> avatars) {
@@ -511,7 +521,7 @@ public class NetworkStuff {
                 return;
             }
 
-            FiguraToast.sendToast(FiguraText.of("backend.badge_cleared"));
+            FiguraToast.sendToast(FiguraText.of("backend.badge_clear"));
         });
     }
 
@@ -642,6 +652,29 @@ public class NetworkStuff {
         public boolean equals(Object o) {
             if (this == o) return true;
             return o instanceof Request request && owner.equals(request.owner);
+        }
+    }
+
+    public enum Destination {
+        BACKEND,
+        FSB,
+        BOTH,
+        FSB_OR_BACKEND;
+
+        public boolean allowBackend() {
+            return switch (this) {
+                case BACKEND, BOTH -> true;
+                case FSB -> false;
+                case FSB_OR_BACKEND -> !org.figuramc.figura.backend2.FSB.instance().connected();
+            };
+        }
+
+        public boolean allowFSB() {
+            return switch (this) {
+                case FSB, BOTH -> true;
+                case BACKEND -> false;
+                case FSB_OR_BACKEND -> org.figuramc.figura.backend2.FSB.instance().connected();
+            };
         }
     }
 }

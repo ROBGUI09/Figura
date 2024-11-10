@@ -1,5 +1,6 @@
 package org.figuramc.figura.gui.screens;
 
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -38,6 +39,7 @@ public class WardrobeScreen extends AbstractPanelScreen {
     private Label panic;
 
     private Button upload, delete, back;
+    private ContextMenu uploadContext, deleteContext;
 
     public WardrobeScreen(Screen parentScreen) {
         super(parentScreen, FiguraText.of("gui.panels.title.wardrobe"));
@@ -78,14 +80,11 @@ public class WardrobeScreen extends AbstractPanelScreen {
 
         // upload
         addRenderableWidget(upload = new Button(buttX - 48, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/upload.png"), 72, 24, FiguraText.of("gui.wardrobe.upload.tooltip"), button -> {
-            Avatar avatar = AvatarManager.getAvatarForPlayer(FiguraMod.getLocalPlayerUUID());
-            try {
-                LocalAvatarLoader.loadAvatar(null, null);
-            } catch (Exception ignored) {}
-            NetworkStuff.uploadAvatar(avatar);
-            AvatarList.selectedEntry = null;
+            if (FSB.instance().connected()) showUploadContext();
+            else deleteAvatar(NetworkStuff.Destination.FSB_OR_BACKEND);
         }));
         upload.setActive(false);
+        generateUploadContext();
 
         // reload
         addRenderableWidget(new Button(buttX - 12, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/reload.png"), 72, 24, FiguraText.of("gui.wardrobe.reload.tooltip"), button -> {
@@ -99,10 +98,12 @@ public class WardrobeScreen extends AbstractPanelScreen {
         }));
 
         // delete
-        addRenderableWidget(delete = new Button(buttX + 24, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/delete.png"), 72, 24, FiguraText.of("gui.wardrobe.delete.tooltip"), button ->
-                NetworkStuff.deleteAvatar(null))
-        );
+        addRenderableWidget(delete = new Button(buttX + 24, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/delete.png"), 72, 24, FiguraText.of("gui.wardrobe.delete.tooltip"), button -> {
+            if (FSB.instance().connected()) showDeleteContext();
+            else deleteAvatar(NetworkStuff.Destination.FSB_OR_BACKEND);
+        }));
         delete.setActive(false);
+        generateDeleteContext();
 
         StatusWidget statusWidget = new StatusWidget(entity.getX() + entity.getWidth() - 64, 0, 64);
         statusWidget.setY(entity.getY() - statusWidget.getHeight() - 4);
@@ -199,6 +200,71 @@ public class WardrobeScreen extends AbstractPanelScreen {
         );
         panic.setY(panic.getRawY() - panic.getHeight());
         panic.setVisible(false);
+    }
+
+    private void uploadAvatar(NetworkStuff.Destination destination) {
+        Avatar avatar = AvatarManager.getAvatarForPlayer(FiguraMod.getLocalPlayerUUID());
+        try {
+            LocalAvatarLoader.loadAvatar(null, null);
+        } catch (Exception ignored) {}
+        NetworkStuff.uploadAvatar(avatar, destination);
+        AvatarList.selectedEntry = null;
+    }
+
+    private void showUploadContext() {
+        if (!FSB.instance().connected()) return;
+        Window window = minecraft.getWindow();
+        double mouseX = minecraft.mouseHandler.xpos() * window.getGuiScaledWidth() / window.getScreenWidth();
+        double mouseY = minecraft.mouseHandler.ypos() * window.getGuiScaledHeight() / window.getScreenHeight();
+        uploadContext.setX((int) mouseX);
+        uploadContext.setY((int) mouseY);
+        uploadContext.setVisible(true);
+        UIHelper.setContext(uploadContext);
+    }
+
+    private void deleteAvatar(NetworkStuff.Destination destination) {
+        NetworkStuff.deleteAvatar(null, destination);
+    }
+
+    private void showDeleteContext() {
+        if (!FSB.instance().connected()) return;
+        Window window = minecraft.getWindow();
+        double mouseX = minecraft.mouseHandler.xpos() * window.getGuiScaledWidth() / window.getScreenWidth();
+        double mouseY = minecraft.mouseHandler.ypos() * window.getGuiScaledHeight() / window.getScreenHeight();
+        deleteContext.setX((int) mouseX);
+        deleteContext.setY((int) mouseY);
+        deleteContext.setVisible(true);
+        UIHelper.setContext(deleteContext);
+    }
+
+    private void generateUploadContext() {
+        uploadContext = new ContextMenu(upload);
+        uploadContext.addAction(FiguraText.of("gui.wardrobe.upload_backend"), FiguraText.of("gui.wardrobe.upload_backend.tooltip"), button -> {
+            uploadAvatar(NetworkStuff.Destination.BACKEND);
+        });
+
+        uploadContext.addAction(FiguraText.of("gui.wardrobe.upload_fsb"), FiguraText.of("gui.wardrobe.upload_fsb.tooltip"), button -> {
+            uploadAvatar(NetworkStuff.Destination.FSB);
+        });
+
+        uploadContext.addAction(FiguraText.of("gui.wardrobe.upload_both"), FiguraText.of("gui.wardrobe.upload_both.tooltip"), button -> {
+            uploadAvatar(NetworkStuff.Destination.BOTH);
+        });
+    }
+
+    private void generateDeleteContext() {
+        deleteContext = new ContextMenu(delete);
+        deleteContext.addAction(FiguraText.of("gui.wardrobe.delete_backend"), FiguraText.of("gui.wardrobe.delete_backend.tooltip"), button -> {
+            deleteAvatar(NetworkStuff.Destination.BACKEND);
+        });
+
+        deleteContext.addAction(FiguraText.of("gui.wardrobe.delete_fsb"), FiguraText.of("gui.wardrobe.delete_fsb.tooltip"), button -> {
+            deleteAvatar(NetworkStuff.Destination.FSB);
+        });
+
+        deleteContext.addAction(FiguraText.of("gui.wardrobe.delete_both"), FiguraText.of("gui.wardrobe.delete_both.tooltip"), button -> {
+            deleteAvatar(NetworkStuff.Destination.BOTH);
+        });
     }
 
     private int getPanels() {
