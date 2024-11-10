@@ -81,7 +81,7 @@ public class WardrobeScreen extends AbstractPanelScreen {
         // upload
         addRenderableWidget(upload = new Button(buttX - 48, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/upload.png"), 72, 24, FiguraText.of("gui.wardrobe.upload.tooltip"), button -> {
             if (FSB.instance().connected()) showUploadContext();
-            else deleteAvatar(NetworkStuff.Destination.FSB_OR_BACKEND);
+            else uploadAvatar(NetworkStuff.Destination.FSB_OR_BACKEND);
         }));
         upload.setActive(false);
         generateUploadContext();
