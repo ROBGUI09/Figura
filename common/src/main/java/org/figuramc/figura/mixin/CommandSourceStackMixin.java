@@ -24,6 +24,6 @@ public abstract class CommandSourceStackMixin implements FiguraServerCommandSour
 
     @Override
     public boolean permission(String permission) {
-        return hasPermission(4) || (entity != null && permission(permission));
+        return hasPermission(4) || (entity != null && FiguraServerCommandSource.super.permission(permission));
     }
 }
