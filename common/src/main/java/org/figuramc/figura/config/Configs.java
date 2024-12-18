@@ -9,6 +9,7 @@ import org.figuramc.figura.avatar.local.CacheAvatarLoader;
 import org.figuramc.figura.avatar.local.LocalAvatarFetcher;
 import org.figuramc.figura.backend2.FSB;
 import org.figuramc.figura.backend2.NetworkStuff;
+import org.figuramc.figura.entries.EntryPointManager;
 import org.figuramc.figura.gui.FiguraToast;
 import org.figuramc.figura.gui.screens.ConfigScreen;
 import org.figuramc.figura.lua.FiguraLuaPrinter;
@@ -136,7 +137,7 @@ public class Configs {
                 String tooltip = "config.render_debug_parts_pivot.tooltip";
                 this.tooltip = FiguraText.of(tooltip,
                         FiguraText.of(tooltip + ".cubes").setStyle(ColorUtils.Colors.AWESOME_BLUE.style),
-                        FiguraText.of(tooltip + ".groups").setStyle(ColorUtils.Colors.BLUE.style));
+                        FiguraText.of(tooltip + ".groups").setStyle(ColorUtils.Colors.FIGURA_BLUE.style));
             }};
     public static final ConfigType.BoolConfig
             ALLOW_FP_HANDS = new ConfigType.BoolConfig("allow_fp_hands", RENDERING, false),
@@ -271,6 +272,7 @@ public class Configs {
             super.onChange();
             PermissionManager.reinit();
             LocalAvatarFetcher.reinit();
+            EntryPointManager.reinit();
         }
     };
     public static final ConfigType.IPConfig
