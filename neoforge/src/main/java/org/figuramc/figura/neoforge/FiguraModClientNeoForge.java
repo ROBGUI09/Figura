@@ -37,7 +37,7 @@ public class FiguraModClientNeoForge extends FiguraMod {
 
     @SubscribeEvent
     public static void registerResourceListener(AddClientReloadListenersEvent event) {
-        getResourceListeners().forEach(figuraResourceListener -> event.addListener(new ResourceLocation(FiguraMod.MOD_ID, "figura_resources"), (FiguraResourceListenerImpl)figuraResourceListener));
+        getResourceListeners().forEach(figuraResourceListener -> event.addListener(new ResourceLocation(FiguraMod.MOD_ID, figuraResourceListener.id()), (FiguraResourceListenerImpl)figuraResourceListener));
     }
 
     @SubscribeEvent
