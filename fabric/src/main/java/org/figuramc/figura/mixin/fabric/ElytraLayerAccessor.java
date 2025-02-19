@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(WingsLayer.class)
 public interface ElytraLayerAccessor {
     @Invoker("getPlayerElytraTexture")
-    static ResourceLocation getPlayerElytraTexture(HumanoidRenderState arg) {
+    static ResourceLocation invoke$getPlayerElytraTexture(HumanoidRenderState arg) {
         throw new AssertionError();
     }
 }

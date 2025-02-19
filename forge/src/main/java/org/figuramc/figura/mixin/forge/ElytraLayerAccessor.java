@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(WingsLayer.class)
 public interface ElytraLayerAccessor {
     @Invoker("getPlayerElytraTexture")
-    ResourceLocation getPlayerElytraTexture(HumanoidRenderState arg);
+    ResourceLocation invoke$getPlayerElytraTexture(HumanoidRenderState arg);
 }

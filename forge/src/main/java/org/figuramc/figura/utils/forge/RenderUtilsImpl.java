@@ -7,6 +7,6 @@ import org.figuramc.figura.mixin.forge.ElytraLayerAccessor;
 
 public class RenderUtilsImpl {
     public static ResourceLocation getPlayerSkinTexture(WingsLayer<?, ?> wingsLayer, HumanoidRenderState humanoidRenderState) {
-        return ((ElytraLayerAccessor)wingsLayer).getPlayerElytraTexture(humanoidRenderState);
+        return ((ElytraLayerAccessor)wingsLayer).invoke$getPlayerElytraTexture(humanoidRenderState);
     }
 }
