@@ -7,13 +7,11 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import org.figuramc.figura.FiguraMod;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.AvatarManager;
@@ -38,8 +36,8 @@ public class FiguraModClientNeoForge extends FiguraMod {
     }
 
     @SubscribeEvent
-    public static void registerResourceListener(RegisterClientReloadListenersEvent event) {
-        getResourceListeners().forEach(figuraResourceListener -> event.registerReloadListener((FiguraResourceListenerImpl)figuraResourceListener));
+    public static void registerResourceListener(AddClientReloadListenersEvent event) {
+        getResourceListeners().forEach(figuraResourceListener -> event.addListener(new ResourceLocation(FiguraMod.MOD_ID, "figura_resources"), (FiguraResourceListenerImpl)figuraResourceListener));
     }
 
     @SubscribeEvent
