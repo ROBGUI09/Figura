@@ -2,6 +2,7 @@ package org.figuramc.figura.mixin.render.layers.items;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.ArmedModel;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.AvatarManager;
@@ -83,9 +85,11 @@ public abstract class ItemInHandLayerMixin<S extends ArmedEntityRenderState, M e
     }
 
     @WrapOperation(method = "renderArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/item/ItemStackRenderState;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V"))
-    private void figuraItemEvent(ItemStackRenderState instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay, Operation<Void> original) {
-        if (((FiguraItemStackRenderStateExtension)instance).figura$getItemStack().getItem() instanceof BlockItem bl && bl.getBlock() instanceof AbstractSkullBlock) {
-            SkullBlockRendererAccessor.setEntity(avatar.renderer.entity);
+    private void figuraItemEvent(ItemStackRenderState instance, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay, Operation<Void> original, @Local(argsOnly = true) S armedState) {
+        ItemStack stack = ((FiguraItemStackRenderStateExtension)instance).figura$getItemStack();
+        Entity entity = AvatarManager.getEntity(armedState);
+        if (avatar != null && stack != null && entity != null && stack.getItem() instanceof BlockItem bl && bl.getBlock() instanceof AbstractSkullBlock sk) {
+            SkullBlockRendererAccessor.setEntity(entity);
             SkullBlockRendererAccessor.setRenderMode(switch (((FiguraItemStackRenderStateExtension) instance).figura$getDisplayContext()) {
                 case FIRST_PERSON_LEFT_HAND -> SkullBlockRendererAccessor.SkullRenderMode.FIRST_PERSON_LEFT_HAND;
                 case FIRST_PERSON_RIGHT_HAND -> SkullBlockRendererAccessor.SkullRenderMode.FIRST_PERSON_RIGHT_HAND;
@@ -96,7 +100,7 @@ public abstract class ItemInHandLayerMixin<S extends ArmedEntityRenderState, M e
             });
         }
         ItemTransform transform = instance.transform();
-        if (avatar == null || !avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)instance).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)instance).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation), FiguraVec3.of(transform.rotation.z, transform.rotation.y, transform.rotation.x), FiguraVec3.fromVec3f(transform.scale), ((FiguraItemStackRenderStateExtension)instance).figura$isLeftHanded(), matrices, vertexConsumers, light, overlay))
+        if (avatar == null || !avatar.itemRenderEvent(ItemStackAPI.verify(stack), ((FiguraItemStackRenderStateExtension)instance).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation), FiguraVec3.of(transform.rotation.z, transform.rotation.y, transform.rotation.x), FiguraVec3.fromVec3f(transform.scale), ((FiguraItemStackRenderStateExtension)instance).figura$isLeftHanded(), matrices, vertexConsumers, light, overlay))
             original.call(instance, matrices, vertexConsumers, light, overlay);
     }
 }
