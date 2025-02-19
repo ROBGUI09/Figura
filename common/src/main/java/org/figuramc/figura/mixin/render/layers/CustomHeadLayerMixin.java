@@ -112,7 +112,9 @@ public abstract class CustomHeadLayerMixin<S extends LivingEntityRenderState, M 
             float s = 10f;
             stack.translate(0d, 4d, 0d);
             stack.scale(s, s, s);
-            itemStackState.render(stack, multiBufferSource, light, OverlayTexture.NO_OVERLAY);
+            ItemTransform transform = itemStackState.transform();
+            if (!avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)itemStackState).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)itemStackState).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation), FiguraVec3.of(transform.rotation.z, transform.rotation.y, transform.rotation.x), FiguraVec3.fromVec3f(transform.scale), ((FiguraItemStackRenderStateExtension) itemStackState).figura$isLeftHanded(), stack, multiBufferSource, light, OverlayTexture.NO_OVERLAY))
+                itemStackState.render(stack, multiBufferSource, light, OverlayTexture.NO_OVERLAY);
         })) {
             ci.cancel();
         }
@@ -131,7 +133,7 @@ public abstract class CustomHeadLayerMixin<S extends LivingEntityRenderState, M 
         if (stack == null) return;
         SkullBlockRendererAccessor.setItem(stack);
         Integer id = ((FiguraEntityRenderStateExtension)livingEntityRenderState).figura$getEntityId();
-        if (id != null)
+        if (id != null && Minecraft.getInstance().level != null && Minecraft.getInstance().level.getEntity(id) != null)
             SkullBlockRendererAccessor.setEntity(Minecraft.getInstance().level.getEntity(id));
         SkullBlockRendererAccessor.setRenderMode(SkullBlockRendererAccessor.SkullRenderMode.HEAD);
     }

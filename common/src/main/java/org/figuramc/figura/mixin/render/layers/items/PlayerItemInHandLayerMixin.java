@@ -5,6 +5,7 @@ import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
@@ -18,6 +19,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.figuramc.figura.avatar.Avatar;
 import org.figuramc.figura.avatar.AvatarManager;
+import org.figuramc.figura.ducks.FiguraItemStackRenderStateExtension;
+import org.figuramc.figura.lua.api.world.ItemStackAPI;
+import org.figuramc.figura.math.vector.FiguraVec3;
 import org.figuramc.figura.model.ParentType;
 import org.figuramc.figura.utils.RenderUtils;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +72,9 @@ public abstract class PlayerItemInHandLayerMixin <S extends PlayerRenderState, M
             float s = 10f;
             stack.scale(s, s, s);
             stack.translate(0, 0, 7 / 16f);
-            itemStackRenderState.render(stack, vertexConsumers, light, OverlayTexture.NO_OVERLAY);
+            ItemTransform transform = itemStackRenderState.transform();
+            if (!avatar.itemRenderEvent(ItemStackAPI.verify(((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getItemStack()), ((FiguraItemStackRenderStateExtension)itemStackRenderState).figura$getDisplayContext().name(), FiguraVec3.fromVec3f(transform.translation), FiguraVec3.of(transform.rotation.z, transform.rotation.y, transform.rotation.x), FiguraVec3.fromVec3f(transform.scale), ((FiguraItemStackRenderStateExtension) itemStackRenderState).figura$isLeftHanded(), stack, vertexConsumers, light, OverlayTexture.NO_OVERLAY))
+                itemStackRenderState.render(stack, vertexConsumers, light, OverlayTexture.NO_OVERLAY);
         })) {
             ci.cancel();
         }
