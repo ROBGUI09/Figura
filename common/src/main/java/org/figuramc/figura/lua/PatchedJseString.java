@@ -31,6 +31,7 @@ import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.compiler.DumpState;
+import org.luaj.vm2.lib.TwoArgFunction;
 
 /**
  * Subclass of {@link LibFunction} which implements the lua standard {@code string}
