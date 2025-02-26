@@ -364,7 +364,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
                 breakRender = true;
                 break;
             }
-            if (!renderPart(child, remainingComplexity, thisPassedPredicate)) {
+            if (!renderPart(child, remainingComplexity, thisPassedPredicate, 1)) {
                 breakRender = true;
                 break;
             }
@@ -387,6 +387,198 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         return !breakRender;
     }
 
+    protected boolean renderPart(FiguraModelPart part, int[] remainingComplexity, boolean prevPredicate, int depth) {
+        FiguraMod.pushProfiler(part.name);
+
+        PartCustomization custom = part.customization;
+
+        // test the current filter scheme
+        FiguraMod.pushProfiler("predicate");
+        Boolean thisPassedPredicate = currentFilterScheme.test(part.parentType, prevPredicate);
+        if (thisPassedPredicate == null || (!custom.visible)) {
+            if (part.parentType.isRenderLayer)
+                part.savedCustomization = customizationStack.peek();
+            FiguraMod.popProfiler(2);
+            return true;
+        }
+
+        // calculate part transforms
+
+        // calculate vanilla parent
+        FiguraMod.popPushProfiler("copyVanillaPart");
+        part.applyVanillaTransforms(vanillaModelData);
+        part.applyExtraTransforms(customizationStack.peek());
+
+        // visibility
+        FiguraMod.popPushProfiler("checkVanillaVisible");
+        if (!ignoreVanillaVisibility && custom.vanillaVisible != null && !custom.vanillaVisible) {
+            FiguraMod.popPushProfiler("removeVanillaTransforms");
+            part.resetVanillaTransforms();
+            FiguraMod.popProfiler(2);
+            return true;
+        }
+
+        // pre render function
+        if (part.preRender != null) {
+            FiguraMod.popPushProfiler("preRenderFunction");
+            avatar.run(part.preRender, avatar.render, tickDelta, avatar.renderMode.name(), part);
+        }
+
+        // recalculate stuff
+        FiguraMod.popPushProfiler("calculatePartMatrices");
+        custom.recalculate();
+
+        // void blocked matrices
+        // that's right, check only for previous predicate
+        FiguraMat4 positionCopy = null;
+        FiguraMat3 normalCopy = null;
+        boolean voidMatrices = !allowHiddenTransforms && !prevPredicate;
+        if (voidMatrices) {
+            FiguraMod.popPushProfiler("clearMatrices");
+            positionCopy = custom.positionMatrix.copy();
+            normalCopy = custom.normalMatrix.copy();
+            custom.positionMatrix.reset();
+            custom.normalMatrix.reset();
+        }
+
+        // push stack
+        FiguraMod.popPushProfiler("pushCustomizationStack");
+        customizationStack.push(custom);
+
+        // restore variables
+        if (voidMatrices) {
+            FiguraMod.popPushProfiler("restoreMatrices");
+            custom.positionMatrix.set(positionCopy);
+            custom.normalMatrix.set(normalCopy);
+        }
+
+        if (thisPassedPredicate) {
+            // recalculate world matrices
+            FiguraMod.popPushProfiler("worldMatrices");
+            if (allowMatrixUpdate) {
+                FiguraMat4 mat = partToWorldMatrices(custom);
+                part.savedPartToWorldMat.set(mat);
+            }
+
+            // recalculate light
+            FiguraMod.popPushProfiler("calculateLight");
+            Level l;
+            if (custom.light != null) {
+                updateLight = false;
+                pivotOffsetter.light = custom.light;
+            }
+            else if (updateLight && (l = Minecraft.getInstance().level) != null) {
+                FiguraVec3 pos = part.savedPartToWorldMat.apply(0d, 0d, 0d);
+                int block = l.getBrightness(LightLayer.BLOCK, pos.asBlockPos());
+                int sky = l.getBrightness(LightLayer.SKY, pos.asBlockPos());
+                customizationStack.peek().light = LightTexture.pack(block, sky);
+            }
+
+            if (custom.alpha != null)
+                pivotOffsetter.alpha = custom.alpha;
+            if (custom.overlay != null)
+                pivotOffsetter.overlay = custom.overlay;
+        }
+
+        // mid render function
+        if (part.midRender != null) {
+            FiguraMod.popPushProfiler("midRenderFunction");
+            avatar.run(part.midRender, avatar.render, tickDelta, avatar.renderMode.name(), part);
+        }
+
+        // render this
+        FiguraMod.popPushProfiler("pushVertices");
+        boolean breakRender = thisPassedPredicate && !part.pushVerticesImmediate(this, remainingComplexity);
+
+        // render extras
+        FiguraMod.popPushProfiler("extras");
+        if (!breakRender && thisPassedPredicate) {
+            boolean renderPivot = shouldRenderPivots > 0;
+            boolean renderTasks = !part.renderTasks.isEmpty();
+            boolean renderPivotParts = part.parentType.isPivot && allowPivotParts;
+
+            if (renderPivot || renderTasks || renderPivotParts) {
+                // fix pivots
+                FiguraMod.pushProfiler("fixMatricesPivot");
+
+                FiguraVec3 pivot = custom.getPivot().copy().add(custom.getOffsetPivot());
+                pivotOffsetter.setPos(pivot);
+                pivotOffsetter.recalculate();
+                customizationStack.push(pivotOffsetter);
+
+                PartCustomization peek = customizationStack.peek();
+
+                // render pivot indicators
+                if (renderPivot) {
+                    FiguraMod.popPushProfiler("renderPivotCube");
+                    renderPivot(part, peek);
+                }
+
+                // render tasks
+                if (renderTasks) {
+                    FiguraMod.popPushProfiler("renderTasks");
+                    int light = peek.light;
+                    int overlay = peek.overlay;
+                    interceptRendersIntoFigura = false;
+                    for (RenderTask task : part.renderTasks.values()) {
+                        if (!task.shouldRender())
+                            continue;
+                        int neededComplexity = task.getComplexity();
+                        if (neededComplexity > remainingComplexity[0])
+                            break;
+                        FiguraMod.pushProfiler(task.getName());
+                        task.render(customizationStack, bufferSource, light, overlay);
+                        remainingComplexity[0] -= neededComplexity;
+                        FiguraMod.popProfiler();
+                    }
+                    interceptRendersIntoFigura = true;
+                }
+
+                // render pivot parts
+                if (renderPivotParts && part.parentType.isPivot) {
+                    FiguraMod.popPushProfiler("savePivotParts");
+                    savePivotTransform(part.parentType, peek);
+                }
+
+                customizationStack.pop();
+                FiguraMod.popProfiler();
+            }
+        }
+
+        // render children
+        FiguraMod.popPushProfiler("children");
+        for (FiguraModelPart child : List.copyOf(part.children)) {
+            if (part.isChildOf(child)) {
+                breakRender = true;
+                break;
+            }
+            if (depth >= 30) {
+                breakRender = true;
+                break;
+            }
+            if (!renderPart(child, remainingComplexity, thisPassedPredicate, depth+1)) {
+                breakRender = true;
+                break;
+            }
+        }
+
+        // reset the parent
+        FiguraMod.popPushProfiler("removeVanillaTransforms");
+        part.resetVanillaTransforms();
+
+        // post render function
+        if (part.postRender != null) {
+            FiguraMod.popPushProfiler("postRenderFunction");
+            avatar.run(part.postRender, avatar.render, tickDelta, avatar.renderMode.name(), part);
+        }
+
+        // pop
+        customizationStack.pop();
+        FiguraMod.popProfiler(2);
+
+        return !breakRender;
+    }
+        
     protected void renderPivot(FiguraModelPart part, PartCustomization customization) {
         boolean group = part.customization.partType == PartCustomization.PartType.GROUP;
         FiguraVec3 color = group ? ColorUtils.Colors.FIGURA_BLUE.vec : ColorUtils.Colors.AWESOME_BLUE.vec;
