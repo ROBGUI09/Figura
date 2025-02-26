@@ -26,6 +26,7 @@ import org.luaj.vm2.lib.*;
 import org.luaj.vm2.lib.jse.JseBaseLib;
 import org.luaj.vm2.lib.jse.JseMathLib;
 import org.luaj.vm2.lib.jse.JseStringLib;
+import org.luaj.vm2.lib.StringLib;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -75,7 +76,58 @@ public class FiguraLuaRuntime {
         userGlobals.load(new JseBaseLib());
         userGlobals.load(new Bit32Lib());
         userGlobals.load(new TableLib());
-        userGlobals.load(new JseStringLib());
+        userGlobals.load(new JseStringLib() {
+            // NOTE: kludgy 
+            @Override
+            static Varargs str_find_aux( Varargs args, boolean find ) {
+        		LuaString s = args.checkstring( 1 );
+        		LuaString pat = args.checkstring( 2 );
+        		int init = args.optint( 3, 1 );
+        		
+        		if ( init > 0 ) {
+        			init = Math.min( init - 1, s.length() );
+        		} else if ( init < 0 ) {
+        			init = Math.max( 0, s.length() + init );
+        		}
+        		
+        		boolean fastMatch = find && ( args.arg(4).toboolean() || pat.indexOfAny( SPECIALS ) == -1 );
+        		
+        		if ( fastMatch ) {
+        			int result = s.indexOf( pat, init );
+        			if ( result != -1 ) {
+        				return LuaValue.varargsOf( LuaValue.valueOf(result+1), LuaValue.valueOf(result+pat.length()) );
+        			}
+        		} else {
+        			StringLib.MatchState ms = new StringLib.MatchState( args, s, pat );
+        			
+        			boolean anchor = false;
+        			int poff = 0;
+        			if ( pat.length() > 0 && pat.luaByte( 0 ) == '^' ) {
+        				anchor = true;
+        				poff = 1;
+        			}
+        			
+        			int soff = init;
+                    int steps = 0;
+        			do {
+                        steps += 1;
+                        if (steps >= 80000) {
+                            return NIL;
+                        }
+        				int res;
+        				ms.reset();
+        				if ( ( res = ms.match( soff, poff ) ) != -1 ) {
+        					if ( find ) {
+        						return LuaValue.varargsOf( LuaValue.valueOf(soff+1), LuaValue.valueOf(res), ms.push_captures( false, soff, res ));
+        					} else {
+        						return ms.push_captures( true, soff, res );
+        					}
+        				}
+        			} while ( soff++ < s.length() && !anchor );
+        		}
+        		return NIL;
+        	}
+        });
         userGlobals.load(new JseMathLib());
 
         LuaC.install(userGlobals);
