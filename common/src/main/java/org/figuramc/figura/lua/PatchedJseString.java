@@ -31,7 +31,7 @@ import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.compiler.DumpState;
-import org.luaj.vm2.lib.TwoArgFunction;
+import org.luaj.vm2.lib.*;
 
 /**
  * Subclass of {@link LibFunction} which implements the lua standard {@code string}
@@ -73,7 +73,7 @@ public class PatchedJseString extends TwoArgFunction {
 		try {
 			out = String.format(src, new Object[] {Double.valueOf(x)});
 		} catch (Throwable e) {
-			out = super.format(src, x);
+			out = String.valueOf(x);
 		}
 		return out;
 	}
@@ -93,28 +93,28 @@ public class PatchedJseString extends TwoArgFunction {
 	 * @param env the environment to load into, typically a Globals instance.
 	 */
 	public LuaValue call(LuaValue modname, LuaValue env) {
-		LuaTable string = new LuaTable();
-		string.set("byte", new _byte());
-		string.set("char", new _char());
-		string.set("dump", new dump());
-		string.set("find", new find());
-		string.set("format", new format());
-		string.set("gmatch", new gmatch());
-		string.set("gsub", new gsub());
-		string.set("len", new len());
-		string.set("lower", new lower());
-		string.set("match", new match());
-		string.set("rep", new rep());
-		string.set("reverse", new reverse());
-		string.set("sub", new sub());
-		string.set("upper", new upper());
+		LuaTable sstring = new LuaTable();
+		sstring.set("byte", new _byte());
+		sstring.set("char", new _char());
+		sstring.set("dump", new dump());
+		sstring.set("find", new find());
+		sstring.set("format", new format());
+		sstring.set("gmatch", new gmatch());
+		sstring.set("gsub", new gsub());
+		sstring.set("len", new len());
+		sstring.set("lower", new lower());
+		sstring.set("match", new match());
+		sstring.set("rep", new rep());
+		sstring.set("reverse", new reverse());
+		sstring.set("sub", new sub());
+		sstring.set("upper", new upper());
 		
-		env.set("string", string);
-		if (!env.get("package").isnil()) env.get("package").get("loaded").set("string", string);
+		env.set("string", sstring);
+		if (!env.get("package").isnil()) env.get("package").get("loaded").set("string", sstring);
 		if (LuaString.s_metatable == null) {
 			LuaString.s_metatable = LuaValue.tableOf(new LuaValue[] { INDEX, string });
 		}
-		return string;
+		return sstring;
 	}
 	
 	/**
@@ -498,9 +498,6 @@ public class PatchedJseString extends TwoArgFunction {
 		}
 	}
 	
-	protected String format(String src, double x) {
-		return String.valueOf(x);
-	}
 	
 	/**
 	 * string.gmatch (s, pattern)
