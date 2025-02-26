@@ -90,7 +90,7 @@ public class FiguraLuaRuntime {
         			init = Math.max( 0, s.length() + init );
         		}
         		
-        		boolean fastMatch = find && ( args.arg(4).toboolean() || pat.indexOfAny( SPECIALS ) == -1 );
+        		boolean fastMatch = find && ( args.arg(4).toboolean() || pat.indexOfAny( LuaValue.valueOf("^$*+?.([%-") ) == -1 );
         		
         		if ( fastMatch ) {
         			int result = s.indexOf( pat, init );
