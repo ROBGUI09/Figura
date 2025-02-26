@@ -360,6 +360,10 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         // render children
         FiguraMod.popPushProfiler("children");
         for (FiguraModelPart child : List.copyOf(part.children)) {
+            if (part.isChildOf(child)) {
+                breakRender = true;
+                break;
+            }
             if (!renderPart(child, remainingComplexity, thisPassedPredicate)) {
                 breakRender = true;
                 break;
