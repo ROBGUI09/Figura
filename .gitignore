@@ -8,6 +8,7 @@ classes/
 # Eclipse
 
 *.launch
+.neverinmylife
 
 # Idea
 
