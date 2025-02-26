@@ -795,7 +795,7 @@ public class PatchedJseString extends TwoArgFunction {
 				ms.reset();
         steps += 1;
         if (steps >= 80000) {
-          return error("catastrophic backtracking")
+          return error("catastrophic backtracking");
         }
 				if ( ( res = ms.match( soff, poff ) ) != -1 ) {
 					if ( find ) {
