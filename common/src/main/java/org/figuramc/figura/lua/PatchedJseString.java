@@ -68,7 +68,7 @@ public class PatchedJseString extends TwoArgFunction {
 	public PatchedJseString() {
 	}
   
-	protected String format(String src, double x) {
+	public String format(String src, double x) {
 		String out;
 		try {
 			out = String.format(src, new Object[] {Double.valueOf(x)});
@@ -112,7 +112,7 @@ public class PatchedJseString extends TwoArgFunction {
 		env.set("string", sstring);
 		if (!env.get("package").isnil()) env.get("package").get("loaded").set("string", sstring);
 		if (LuaString.s_metatable == null) {
-			LuaString.s_metatable = LuaValue.tableOf(new LuaValue[] { INDEX, string });
+			LuaString.s_metatable = LuaValue.tableOf(new LuaValue[] { INDEX, sstring });
 		}
 		return sstring;
 	}
@@ -481,7 +481,7 @@ public class PatchedJseString extends TwoArgFunction {
 		}
 		
 		public void format(Buffer buf, double x) {
-			buf.append( StringLib.this.format(src, x) );
+			buf.append( PatchedJseString.this.format(src, x) );
 		}
 		
 		public void format(Buffer buf, LuaString s) {

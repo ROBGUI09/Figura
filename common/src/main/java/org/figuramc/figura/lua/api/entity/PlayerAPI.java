@@ -7,6 +7,8 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.network.chat.Component;
 import org.figuramc.figura.lua.LuaNotNil;
 import org.figuramc.figura.lua.LuaWhitelist;
 import org.figuramc.figura.lua.NbtToLua;
@@ -20,6 +22,7 @@ import org.figuramc.figura.mixin.FoodDataMixin;
 import org.figuramc.figura.utils.EntityUtils;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
+import net.minecraft.core.RegistryAccess;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -182,7 +185,9 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
         map.put("display_name", team.getDisplayName().getString());
         map.put("color", team.getColor().getName());
         map.put("prefix", team.getPlayerPrefix().getString());
+        map.put("prefixJson", Component.Serializer.toJson(team.getPlayerPrefix(),RegistryAccess.EMPTY));
         map.put("suffix", team.getPlayerSuffix().getString());
+        map.put("suffixJson", Component.Serializer.toJson(team.getPlayerSuffix(),RegistryAccess.EMPTY));
         map.put("friendly_fire", team.isAllowFriendlyFire());
         map.put("see_friendly_invisibles", team.canSeeFriendlyInvisibles());
         map.put("nametag_visibility", team.getNameTagVisibility().name);
