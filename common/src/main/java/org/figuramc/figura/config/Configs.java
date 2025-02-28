@@ -183,6 +183,18 @@ public class Configs {
     public static final ConfigType.BoolConfig
             REDUCED_MOTION = new ConfigType.BoolConfig("reduced_motion", UI, false);
 
+	public static final ConfigType.PositiveIntConfig
+            PARTS_DEPTH_LIMIT = new ConfigType.PositiveIntConfig("parts_depth_limit", RENDERING, 15);
+	public static final ConfigType.PositiveIntConfig
+            STRING_REP_MAX_LENGTH = new ConfigType.PositiveIntConfig("string_rep_max_length", SCRIPT, 32767);
+	public static final ConfigType.PositiveIntConfig
+            STRING_REP_MAX_REPEATS = new ConfigType.PositiveIntConfig("string_rep_max_repeats", SCRIPT, 64);
+	public static final ConfigType.PositiveIntConfig
+            STRING_REVERSE_MAX_LENGTH = new ConfigType.PositiveIntConfig("string_reverse_max_length", SCRIPT, 65535);
+	public static final ConfigType.PositiveIntConfig
+            STRING_SUB_MAX_LENGTH = new ConfigType.PositiveIntConfig("string_sub_max_length", SCRIPT, 65535);
+	public static final ConfigType.PositiveIntConfig
+            STRING_FIND_MAX_STEPS = new ConfigType.PositiveIntConfig("string_find_max_steps", SCRIPT, 80000);
 
     // -- PAPERDOLL -- // 
 

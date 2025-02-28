@@ -201,6 +201,13 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
     }
 
     protected boolean renderPart(FiguraModelPart part, int[] remainingComplexity, boolean prevPredicate) {
+		return renderPart(part, remainingComplexity, prevPredicate, 0);
+	}
+		
+	protected boolean renderPart(FiguraModelPart part, int[] remainingComplexity, boolean prevPredicate, int depth) {
+		if (depth > Configs.PARTS_DEPTH_LIMIT.value) {
+			return false;
+		}
         FiguraMod.pushProfiler(part.name);
 
         PartCustomization custom = part.customization;
@@ -361,7 +368,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         // render children
         FiguraMod.popPushProfiler("children");
         for (FiguraModelPart child : List.copyOf(part.children)) {
-            if (!renderPart(child, remainingComplexity, thisPassedPredicate)) {
+            if (!renderPart(child, remainingComplexity, thisPassedPredicate, depth+1)) {
                 breakRender = true;
                 break;
             }
