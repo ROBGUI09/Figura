@@ -477,7 +477,10 @@ public class LuaUtils {
         }
     }
 
-    public static JsonElement asJsonValue(LuaValue value) {
+    public static JsonElement asJsonValue(LuaValue value, int depth) {
+		if (depth > 5) {
+			return null;
+		}
         if (value.isnil()) return JsonNull.INSTANCE;
         if (value.isboolean()) return new JsonPrimitive(value.checkboolean());
         if (value instanceof LuaString s) return new JsonPrimitive(s.checkjstring());
@@ -492,7 +495,7 @@ public class LuaUtils {
                 LuaValue[] keys = table.keys();
                 int arrayLength = keys[keys.length-1].checkint();
                 for(int i = 1; i <= arrayLength; i++) {
-                    arr.add(asJsonValue(table.get(i)));
+                    arr.add(asJsonValue(table.get(i),depth+1));
                 }
                 return arr;
             }
@@ -500,7 +503,7 @@ public class LuaUtils {
             else {
                 JsonObject object = new JsonObject();
                 for (LuaValue key : table.keys()) {
-                    object.add(key.tojstring(), asJsonValue(table.get(key)));
+                    object.add(key.tojstring(), asJsonValue(table.get(key),depth+1));
                 }
                 return object;
             }
@@ -511,6 +514,10 @@ public class LuaUtils {
         // Fallback for things that shouldn't be converted (like functions)
         return null;
     }
+	
+	public static JsonElement asJsonValue(LuaValue value) {
+		return asJsonValue(value, 0);
+	}
 
     public static boolean checkTableArray(LuaTable table) {
         for (LuaValue key : table.keys()) {

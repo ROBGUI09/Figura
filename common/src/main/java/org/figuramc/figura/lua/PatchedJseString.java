@@ -685,6 +685,12 @@ public class PatchedJseString extends TwoArgFunction {
 		public Varargs invoke(Varargs args) {
 			LuaString s = args.checkstring( 1 );
 			int n = args.checkint( 2 );
+			if (s.length() > 32767) {
+				return NIL;
+			}
+			if (n > 64) {
+				return NIL;
+			}
 			final byte[] bytes = new byte[ s.length() * n ];
 			int len = s.length();
 			for ( int offset = 0; offset < bytes.length; offset += len ) {
@@ -703,6 +709,9 @@ public class PatchedJseString extends TwoArgFunction {
 		public LuaValue call(LuaValue arg) {
 			LuaString s = arg.checkstring();
 			int n = s.length();
+			if (n > 65535) {
+				return NIL;
+			}
 			byte[] b = new byte[n];
 			for ( int i=0, j=n-1; i<n; i++, j-- )
 				b[j] = (byte) s.luaByte(i);
@@ -725,6 +734,9 @@ public class PatchedJseString extends TwoArgFunction {
 		public Varargs invoke(Varargs args) {
 			final LuaString s = args.checkstring( 1 );
 			final int l = s.length();
+			if (l > 65535) {
+				return NIL;
+			}
 			
 			int start = posrelat( args.checkint( 2 ), l );
 			int end = posrelat( args.optint( 3, -1 ), l );
@@ -762,6 +774,9 @@ public class PatchedJseString extends TwoArgFunction {
 		LuaString s = args.checkstring( 1 );
 		LuaString pat = args.checkstring( 2 );
 		int init = args.optint( 3, 1 );
+		if (s.length() > 65535) {
+			return NIL;
+		}
 		
 		if ( init > 0 ) {
 			init = Math.min( init - 1, s.length() );
